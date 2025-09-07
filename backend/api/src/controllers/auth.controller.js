@@ -1,10 +1,12 @@
 import { get } from "lodash";
 import { handleLogin, handleProviderLogin, handleRegister } from "../services/auth.service";
 import { verifyProviderLogin } from "../utils/utility";
-import { AUTH_ERRORS, GOOGLE_LOGIN_FAILED } from "../constants/auth";
 import { ENVIRONMENTS } from "../constants/common";
+import { AppError } from "../errors/AppError";
+import { ERROR_CODES } from "../errors/errorCodes";
+import { ERROR_MESSAGES } from "../errors/errorMessages";
 
-export const loginWithProvider = async (req, res) => {
+export const loginWithProvider = async (req, res, next) => {
     try {
         const payload = verifyProviderLogin(get(req, "body.token"));
         const { email, name, picture, sub: googleId } = payload;
@@ -19,7 +21,7 @@ export const loginWithProvider = async (req, res) => {
 
         res.status(200).json({ code: "AUTH_GOOGLE_SUC", user });
     } catch (err) {
-        res.status(401).json({ code: "AUTH_GOOGLE_ERR", message: AUTH_ERRORS.GOOGLE_LOGIN_FAILED })
+        next(new AppError(ERROR_CODES.AUTH.GOOGLE_LOGIN_FAILED, ERROR_MESSAGES[ERROR_CODES.AUTH.GOOGLE_LOGIN_FAILED, 500]))
     }
 }
 
@@ -32,7 +34,7 @@ export const registerUser = async (req, res) => {
         const user = await handleRegister(userData);
         res.status(200).json({ code: "AUTH_REGISTER_SUC", user });
     } catch (err) {
-        res.status(500).json({ code: "AUTH_REGISTER_ERR", message: AUTH_ERRORS.TECHNICAL_ERR })
+        next(new AppError(ERROR_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[ERROR_CODES.AUTH.TECHNICAL_ERR, 500]))
     }
 }
 
@@ -59,7 +61,6 @@ export const doLogin = async (req, res) => {
         res.status(200).json({ code: "AUTH_LOGIN_SUC", user });
     } catch (err) {
         console.warn(`[LOGIN FAILED] Email: ${userData.email} at ${new Date().toISOString()} - Reason: ${err.message}`);
-
-        res.status(401).json({ code: "AUTH_LOGIN_ERR", message: AUTH_ERRORS.USERNAME_PASSWORD_INCORRECT})
+        next(new AppError(ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, 401]))
     }
 }

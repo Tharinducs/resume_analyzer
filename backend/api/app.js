@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import helmet from 'helmet';
 import "./src/config/config.js"
 import { globalRateLimiter } from "./src/midlewares/rateLimit.middleware.js";
+import { errorHandler } from "./src/midlewares/errorHandler.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use(helmet({crossOriginResourcePolicy: false}))
 app.use(globalRateLimiter)
 app.use(express.urlencoded({ extended: true }));
+app.use(errorHandler)
 
 app.disable("x-powered-by");
 

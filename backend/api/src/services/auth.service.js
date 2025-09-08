@@ -3,6 +3,9 @@ import { get, isEmpty } from "lodash"
 import { generateToken } from "../utils/jwt.util"
 import { AUTH_ERRORS, INVALID_USER, PROVIDER, THERE_IS_A_USER_ALREADY_WITH_EMAIL } from "../constants/auth"
 import { validatePassword } from "../utils/utility"
+import { AppError } from "../errors/AppError"
+import { ERROR_CODES } from "../errors/errorCodes"
+import { ERROR_MESSAGES } from "../errors/errorMessages"
 
 export const handleProviderLogin = async ({ email, userName, picture, providerUserId, provider }) => {
     let user = await authRepo.findByEmail({ email });
@@ -18,10 +21,10 @@ export const handleRegister = async ({ email, userName, password }) => {
     if (isEmpty(user)) {
         user = await authRepo.createUser({ email, userName, password, provider: PROVIDER.LOCAL });
         user.password = undefined;
-        
+
         return user;
     }
-    throw new Error(`${AUTH_ERRORS.THERE_IS_A_USER_ALREADY_WITH_EMAIL}${email}`);
+    throw new AppError(ERROR_CODES.AUTH.THERE_IS_A_USER_ALREADY_WITH_EMAIL, ERROR_MESSAGES[ERROR_CODES.AUTH.THERE_IS_A_USER_ALREADY_WITH_EMAIL], 401)
 }
 
 export const handleLogin = async ({ email, password }) => {
@@ -39,6 +42,6 @@ export const handleLogin = async ({ email, password }) => {
 
         return { user, token }
     }
-    throw new Error(AUTH_ERRORS.INVALID_USER);
+    throw new AppError(ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT], 401)
 }
 

@@ -1,4 +1,4 @@
-import { get } from "lodash";
+import { get, isEmpty } from "lodash";
 import { handleLogin, handleProviderLogin, handleRegister } from "../services/auth.service";
 import { verifyProviderLogin } from "../utils/utility";
 import { ENVIRONMENTS } from "../constants/common";
@@ -34,6 +34,10 @@ export const registerUser = async (req, res) => {
         const user = await handleRegister(userData);
         res.status(200).json({ code: "AUTH_REGISTER_SUC", user });
     } catch (err) {
+        const status = get(err,"status","")
+        if(!isEmpty(status)){
+            next(err)
+        }
         next(new AppError(ERROR_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[ERROR_CODES.AUTH.TECHNICAL_ERR, 500]))
     }
 }
@@ -61,6 +65,10 @@ export const doLogin = async (req, res) => {
         res.status(200).json({ code: "AUTH_LOGIN_SUC", user });
     } catch (err) {
         console.warn(`[LOGIN FAILED] Email: ${userData.email} at ${new Date().toISOString()} - Reason: ${err.message}`);
+        const status = get(err,"status","")
+        if(!isEmpty(status)){
+            next(err)
+        }
         next(new AppError(ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, 401]))
     }
 }

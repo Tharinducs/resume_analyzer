@@ -1,4 +1,7 @@
 import { projectRepo } from "../repositories/project.repository";
+import { AppError } from "../errors/AppError"
+import { ERROR_CODES } from "../errors/errorCodes"
+import { ERROR_MESSAGES } from "../errors/errorMessages"
 
 export const projectService = {
     async createProject(userId, projectData) {
@@ -7,7 +10,7 @@ export const projectService = {
 
     async getProjectById(projectId) {
         const project = await projectRepo.findById(projectId);
-        if (!project) throw new Error("PROJECT_NOT_FOUND");
+        if (!project) throw new AppError(ERROR_CODES.PROJECT.NOT_FOUND, ERROR_MESSAGES[ERROR_CODES.PROJECT.NOT_FOUND], 401);
         return project;
     },
 
@@ -17,13 +20,13 @@ export const projectService = {
 
     async updateProject(projectId, data) {
         const project = await projectRepo.update(projectId, data);
-        if (!project) throw new Error("PROJECT_NOT_FOUND");
+        if (!project) throw new AppError(ERROR_CODES.PROJECT.NOT_FOUND, ERROR_MESSAGES[ERROR_CODES.PROJECT.NOT_FOUND], 401);
         return project;
     },
 
     async deleteProject(projectId) {
         const project = await projectRepo.delete(projectId);
-        if (!project) throw new Error("PROJECT_NOT_FOUND");
+        if (!project) throw new AppError(ERROR_CODES.PROJECT.NOT_FOUND, ERROR_MESSAGES[ERROR_CODES.PROJECT.NOT_FOUND], 401);
         return project;
     }
 }

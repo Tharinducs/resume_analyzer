@@ -1,7 +1,7 @@
 import * as authRepo from "../repositories/auth.repository"
 import { get, isEmpty } from "lodash"
 import { generateToken } from "../utils/jwt.util"
-import { AUTH_ERRORS, INVALID_USER, PROVIDER, THERE_IS_A_USER_ALREADY_WITH_EMAIL } from "../constants/auth"
+import { PROVIDER } from "../constants/auth"
 import { validatePassword } from "../utils/utility"
 import { AppError } from "../errors/AppError"
 import { ERROR_CODES } from "../errors/errorCodes"
@@ -34,7 +34,7 @@ export const handleLogin = async ({ email, password }) => {
         const validPassword = await validatePassword(password, get(user, "password", null));
 
         if (!validPassword) {
-            throw new Error(AUTH_ERRORS.INVALID_USER);
+            throw new AppError(ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT], 401)
         }
 
         const token = generateToken(user);

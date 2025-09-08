@@ -7,4 +7,6 @@ export const ERROR_MESSAGES = {
 
   [ERROR_CODES.PROJECT.NOT_FOUND]: "Project not found.",
   [ERROR_CODES.PROJECT.UNAUTHORIZED]: "You are not authorized to access this project.",
+
+  [ERROR_CODES.GEN.TECHNICAL_ERR] : "There is a Techical Error."
 };

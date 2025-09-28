@@ -1,171 +1,91 @@
-# 🧠 AI Task Manager (Full Stack)
+# 🚀 AI Resume & Portfolio Analyzer  
 
-A full-stack AI-powered project/task assistant built with **React (frontend)**, **Node.js (backend)**, **MongoDB**, **JWT Auth**, **Google OAuth**, and optionally **Python AI agents**. This system allows users to manage projects and tasks, and interact with AI to get intelligent suggestions, breakdowns, and status updates.
+An intelligent web application that helps job seekers and professionals improve their **resumes** and **portfolios** using AI. The system analyzes uploaded resumes, GitHub/portfolio links, and provides actionable insights, suggestions, and scoring to help users stand out in their job applications.  
 
----
-
-## 🔧 Tech Stack
-
-| Layer      | Technology                                 |
-| ---------- | ------------------------------------------ |
-| Frontend   | React, Tailwind CSS, Axios                 |
-| Backend    | Node.js, Express                           |
-| Database   | MongoDB (Mongoose)                         |
-| Auth       | JWT, Google OAuth2                         |
-| AI Layer   | Python (FastAPI), Gemini/OpenAI            |
-| Deployment | Vercel (frontend), Render/Fly.io (backend) |
-| Tooling    | dotenv, ESLint, Prettier, Cookie-Parser    |
+Built with **React, Redux, Radix UI, Node.js/Express, MongoDB, and Gemini/OpenAI integration**, featuring **social login (Google, LinkedIn)** and a clean modern UI.  
 
 ---
 
-## 📁 Folder Structure
+## ✨ Features  
 
-```
-ai-task-manager/
-├── backend/                 # Node.js Backend (API + Auth)
-│   ├── controllers/
-│   ├── routes/
-│   ├── models/
-│   ├── middlewares/
-│   ├── utils/
-│   └── index.js
-├── frontend/                # React Frontend
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── context/
-│   │   └── App.js
-│   └── tailwind.config.js
-├── ai-agents/               # Optional Python FastAPI (AI tasks)
-│   ├── agents/
-│   ├── services/
-│   └── main.py
-├── .env.example
-├── README.md
-```
+### 🔑 Authentication & User Management  
+- Social login via **Google** and **LinkedIn** (OAuth 2.0).  
+- Secure JWT-based authentication.  
+- Profile management (update name, email, picture).  
+
+### 📄 Resume Analyzer  
+- Upload resumes in **PDF/DOCX** format.  
+- AI-powered extraction of:  
+  - Skills  
+  - Experience  
+  - Education  
+  - Achievements  
+- Generates feedback on:  
+  - Grammar & clarity  
+  - Role-specific keywords  
+  - ATS (Applicant Tracking System) compatibility  
+- Resume **scoring system** (e.g., 0–100).  
+
+### 🌐 Portfolio & GitHub Analyzer  
+- Analyze user-provided **portfolio websites** and **GitHub repos**.  
+- AI generates insights on:  
+  - Code quality & best practices  
+  - Project relevance for target roles  
+  - UI/UX strengths & weaknesses  
+- Portfolio **strength score** out of 100.  
+
+### 📊 Dashboard  
+- Personalized dashboard with:  
+  - Resume score  
+  - Portfolio score  
+  - Strengths & weaknesses  
+  - Actionable improvement tips  
+- Trend graph (improvement over time).  
+
+### 📑 Job Role Optimization  
+- User selects target role (e.g., **Frontend Engineer, QA Engineer, Solution Architect**).  
+- AI suggests:  
+  - Missing skills  
+  - Relevant certifications  
+  - Projects to showcase  
+
+### 🛠️ Tech Stack  
+- **Frontend:** React (Vite/Next.js), Redux, Radix UI, TailwindCSS  
+- **Backend:** Node.js, Express.js, Gemini/OpenAI API  
+- **Database:** MongoDB (Atlas)  
+- **Authentication:** OAuth (Google, LinkedIn) + JWT  
+- **Deployment:** Vercel (frontend) + Render/Heroku (backend) + MongoDB Atlas  
 
 ---
 
-## 🌐 Backend Setup (Node.js)
+## ⚙️ Installation  
 
-### 📦 Install & Run
+### Prerequisites  
+- Node.js (>= 18.x)  
+- MongoDB Atlas account  
+- Gemini/OpenAI API key  
+- Google/LinkedIn OAuth credentials  
 
+### Steps  
 ```bash
-cd backend
+# Clone repository
+git clone https://github.com/your-username/ai-resume-portfolio-analyzer.git
+
+# Navigate to project
+cd ai-resume-portfolio-analyzer
+
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+
+# Run frontend
+cd client
 npm install
 npm run dev
-```
 
-### 🔑 Environment Variables (`.env`)
-
-```env
-PORT=5000
-MONGO_URI=your_mongo_connection_string
-JWT_SECRET=your_jwt_secret
-CLIENT_URL=http://localhost:3000
-```
-
-### 📌 API Endpoints
-
-#### Auth
-
-| Method | Endpoint         | Description        |
-| ------ | ---------------- | ------------------ |
-| POST   | /api/auth/google | Google OAuth login |
-| POST   | /api/auth/logout | Logout user        |
-
-#### Users
-
-\| GET    | /api/users/me    | Get current user     |
-\| PATCH  | /api/users/\:id   | Update user info     |
-
-#### Projects
-
-\| GET    | /api/projects    | Get all projects     |
-\| POST   | /api/projects    | Create new project   |
-\| PATCH  | /api/projects/\:id| Update project       |
-\| DELETE | /api/projects/\:id| Delete project       |
-
----
-
-## 🎨 Frontend Setup (React)
-
-### 📦 Install & Run
-
-```bash
-cd frontend
+# Run backend
+cd server
 npm install
 npm run dev
-```
-
-### 🌟 Pages
-
-* `/login` – Google login
-* `/dashboard` – Project/task overview
-* `/project/:id` – Detailed view
-* `/profile` – User info & logout
-
-### 🧩 Components
-
-* `Header`, `Sidebar`, `ProjectCard`, `AgentChat`
-* Forms: `AddProjectForm`, `EditTaskForm`
-
-### 📡 Services (API Calls)
-
-* Axios is used to connect with backend
-* Interceptors handle JWT token
-
----
-
-## 🤖 Optional AI Integration (Python FastAPI)
-
-Add smart features such as:
-
-* Auto-task breakdowns
-* Natural language queries
-* Timeline suggestions
-
-### Run Python Agent
-
-```bash
-cd ai-agents
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-AI endpoints can be called from the Node backend or directly by the frontend.
-
----
-
-## 🚀 Deployment Plan
-
-| Component | Service          | Tool        |
-| --------- | ---------------- | ----------- |
-| Frontend  | Vercel           | React Build |
-| Backend   | Render           | Node.js     |
-| Database  | MongoDB Atlas    | Cloud NoSQL |
-| AI Agent  | Fly.io / Railway | FastAPI     |
-
----
-
-## 🛡️ Security Checklist
-
-* [x] JWT stored in HttpOnly cookies
-* [x] CORS with credentials enabled
-* [x] Environment variables via dotenv
-* [x] Route-based middleware auth guards
-
----
-
-## 🙋 Author
-
-Built by [Tharindu Sandaruwan](https://github.com/Tharinducs)
-
-Open for collaboration. Feel free to fork, contribute or drop a ⭐ if you like this!
-
----
-
-## 📜 License
-
-MIT License. Free for personal and commercial use.

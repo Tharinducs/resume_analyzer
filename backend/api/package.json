@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "This is a multi agent system with AI support",
+  "description": "This is a resume analyzer API",
   "main": "index.js",
   "type": "module",
   "scripts": {

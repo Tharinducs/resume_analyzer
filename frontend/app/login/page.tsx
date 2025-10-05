@@ -8,18 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Brain, Mail, Lock } from "lucide-react"
 import GoogleLogin from "./google-login"
+import { GoogleOAuthProvider } from "@react-oauth/google"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
-
-  const handleSocialLogin = async (provider: string) => {
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    // Redirect to dashboard after successful login
-    window.location.href = "/dashboard"
-  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -46,10 +38,11 @@ export default function LoginPage() {
           <CardContent className="space-y-4">
             {/* Social Login Buttons */}
             <div className="space-y-3">
-              <GoogleLogin
-                onClick={() => handleSocialLogin("google")}
-                className="w-full h-11 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              />
+              <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+                <GoogleLogin
+                  handleGoogleLogin={() => {}} isLoading={false}
+                />
+              </GoogleOAuthProvider>
             </div>
 
             <div className="relative">

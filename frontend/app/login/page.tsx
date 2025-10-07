@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +8,21 @@ import { Separator } from "@/components/ui/separator"
 import { Brain, Mail, Lock } from "lucide-react"
 import GoogleLogin from "./google-login"
 import { GoogleOAuthProvider } from "@react-oauth/google"
+import { useGoogleLoginMutation } from "@/features/auth/apiSlice";
+import { useDispatch } from "react-redux";
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [googleLogin, { isLoading: isGoogleLoading, error, isError, isSuccess }] = useGoogleLoginMutation();
+  const dispatch = useDispatch();
+
+  const googleLoginHandler = async (credential: string) => {
+    try {
+      const user = await googleLogin(credential).unwrap();
+      console.log("Google login successful: ", user);
+    } catch (err) {
+      console.error("Failed to login with Google: ", err);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -40,7 +51,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
                 <GoogleLogin
-                  handleGoogleLogin={() => {}} isLoading={false}
+                  handleGoogleLogin={googleLoginHandler}
                 />
               </GoogleOAuthProvider>
             </div>
@@ -78,7 +89,7 @@ export default function LoginPage() {
                   className="h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
                 />
               </div>
-              <Button className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
+              <Button className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white">
                 <Lock className="mr-2 h-4 w-4" />
                 Sign In
               </Button>

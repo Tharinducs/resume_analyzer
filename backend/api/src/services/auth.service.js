@@ -1,19 +1,25 @@
-import * as authRepo from "../repositories/auth.repository"
-import { get, isEmpty } from "lodash"
-import { generateToken } from "../utils/jwt.util"
-import { PROVIDER } from "../constants/auth"
-import { validatePassword } from "../utils/utility"
-import { AppError } from "../errors/AppError"
-import { ERROR_CODES } from "../errors/errorCodes"
-import { ERROR_MESSAGES } from "../errors/errorMessages"
+import * as authRepo from "../repositories/auth.repository.js"
+import { get, isEmpty } from "../utils/custom.lodash.js"
+import { generateToken } from "../utils/jwt.util.js"
+import { PROVIDER } from "../constants/auth.js"
+import { validatePassword } from "../utils/utility.js"
+import { AppError } from "../errors/AppError.js"
+import { ERROR_CODES } from "../errors/errorCodes.js"
+import { ERROR_MESSAGES } from "../errors/errorMessages.js"
 
-export const handleProviderLogin = async ({ email, userName, picture, providerUserId, provider }) => {
-    let user = await authRepo.findByEmail({ email });
-    if (isEmpty(user)) {
-        user = await authRepo.createUser({ email, userName, picture, providerUserId, provider });
+export const handleProviderLogin = async ({ email, name, picture, providerUserId, provider }) => {
+    try {
+        let user = await authRepo.findByEmail(email);
+        if (isEmpty(user)) {
+            console.log("No user found, creating new user.");
+            user = await authRepo.createUser({ email, name, picture, providerUserId, provider });
+        }
+        const token = generateToken(user);
+        return { user, token }
+    } catch (err) {
+        console.error("Error in handleProviderLogin:", err);
+        throw err;
     }
-    const token = generateToken(user);
-    return { user, token }
 }
 
 export const handleRegister = async ({ email, userName, password }) => {

@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
         picture: String,
         providerUserId: String,
         provider: { type: String, default: "local" },
-        mobileNo: { type: String, unique: true },
+        mobileNo: { type: String },
         address: String,
         password:{ type: String , select: false}
     },
@@ -16,11 +16,12 @@ const userSchema = new mongoose.Schema(
 )
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(12);
-    this.password = bcrypt.hash(this.password, salt);
+    this.password = await bcrypt.hash(this.password, salt);
+    console.log(this.password);
     next();
   } catch (err) {
     next(err);
@@ -34,4 +35,4 @@ userSchema.set("toJSON", {
   },
 });
 
-export default mongoose.Model("User",userSchema)
+export default mongoose.model("User",userSchema)

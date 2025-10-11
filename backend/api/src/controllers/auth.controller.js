@@ -1,17 +1,17 @@
-import { get, isEmpty } from "lodash";
-import { handleLogin, handleProviderLogin, handleRegister } from "../services/auth.service";
-import { verifyProviderLogin } from "../utils/utility";
-import { ENVIRONMENTS } from "../constants/common";
-import { AppError } from "../errors/AppError";
-import { ERROR_CODES } from "../errors/errorCodes";
-import { ERROR_MESSAGES } from "../errors/errorMessages";
+import { get, isEmpty } from "../utils/custom.lodash.js";
+import { handleLogin, handleProviderLogin, handleRegister } from "../services/auth.service.js";
+import { verifyProviderLogin } from "../utils/utility.js";
+import { ENVIRONMENTS } from "../constants/common.js";
+import { AppError } from "../errors/AppError.js";
+import { ERROR_CODES } from "../errors/errorCodes.js";
+import { ERROR_MESSAGES } from "../errors/errorMessages.js";
 
 export const loginWithProvider = async (req, res, next) => {
     try {
-        const payload = verifyProviderLogin(get(req, "body.token"));
+        const payload = await verifyProviderLogin(get(req, "body.token"));
         const { email, name, picture, sub: googleId } = payload;
-        const { user, token: jwt } = await handleProviderLogin({ email, userName: name, picture, providerUserId: googleId, provider: get(req, "body.provider") })
-
+        const { user, token: jwt } = await handleProviderLogin({ email, name, picture, providerUserId: googleId, provider: "google" });
+        console.log(`[GOOGLE LOGIN SUCCESS] UserID: ${user.id} Email: ${user.email} at ${new Date().toISOString()}`)
         res.cookie("token", jwt, {
             httpOnly: true,
             secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,

@@ -5,11 +5,13 @@ import helmet from 'helmet';
 import "./src/config/config.js"
 import { globalRateLimiter } from "./src/midlewares/rateLimit.middleware.js";
 import { errorHandler } from "./src/midlewares/errorHandler.js";
+import { API, AUTH_ROUTE } from "./src/constants/routes.js";
+import authRouter from "./src/routes/auth.routes.js";
 
 const app = express();
 
 app.use(cors({ 
-  origin: process.env.CLIENT_URL,
+  origin: "http://localhost:3000",
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -26,6 +28,13 @@ app.disable("x-powered-by");
 
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "OK" });
+});
+
+app.use(`${AUTH_ROUTE}`, authRouter); 
+
+app.use((req, res, next) => {
+  console.log(`404 - Not Found - ${req.originalUrl}`);
+  res.status(404).json({ message: "Route not found" });
 });
 
 export default app;

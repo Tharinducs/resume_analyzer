@@ -29,7 +29,17 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport />
+      <ToastViewport style={{
+        top: '1rem',
+        right: '1rem',
+        bottom: 'auto',
+        left: 'auto',
+        position: 'fixed',
+        zIndex: 100,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+      }} />
     </ToastProvider>
   )
 }

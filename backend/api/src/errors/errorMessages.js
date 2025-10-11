@@ -1,4 +1,4 @@
-import { ERROR_CODES } from "./errorCodes";
+import { ERROR_CODES } from "./errorCodes.js";
 
 export const ERROR_MESSAGES = {
   [ERROR_CODES.AUTH.USERNAME_PASSWORD_INCORRECT]: "Username or Password is incorrect",

@@ -10,6 +10,7 @@ import "./globals.css"
 import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
 import { store, persistor } from "@/store/store"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function RootLayout({
   children,
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        <Toaster />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ThemeProvider defaultTheme="dark" storageKey="ai-resume-analyzer-theme">

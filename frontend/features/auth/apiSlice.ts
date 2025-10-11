@@ -9,7 +9,7 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     googleLogin: builder.mutation({
       query: (token: string) => ({
-        url: '/provider',
+        url: '/auth/provider',
         method: 'POST',
         body: { token },
       }),

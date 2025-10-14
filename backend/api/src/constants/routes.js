@@ -8,5 +8,6 @@ export const AUTH_ROUTES = {
   REGISTER: `/register`,
   PROVIDER_LOGIN: `/provider`,
   LOGOUT: `/logout`,
+  REFRESH : `/refresh-token`,
   ME: `/me`,
 };

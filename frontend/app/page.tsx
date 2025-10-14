@@ -1,43 +1,49 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { OnboardingWizard } from "@/components/onboarding-wizard"
+import { useState, useEffect, useRef } from "react"
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useRefreshTokenMutation } from "@/features/auth/apiSlice";
+import { useRouter } from "next/navigation";
+import { get, isEmpty } from "lodash";
+import { API_CODES } from "@/constants/apiCodes";
+import { loginSuccess } from "@/features/auth/authSlice";
 
 export default function HomePage() {
-  const [showOnboarding, setShowOnboarding] = useState(false)
-
+  const [refreshToken, { isLoading: isRefreshLoading, isSuccess }] = useRefreshTokenMutation();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    // Check if user is authenticated and needs onboarding
-    const isAuthenticated = false // This would come from your auth system
-    const hasCompletedOnboarding = false // This would come from user data
-
-    if (isAuthenticated && !hasCompletedOnboarding) {
-      setShowOnboarding(true)
-    } else if (!isAuthenticated) {
-      // Redirect to login
-      window.location.href = "/login"
+    if (!isEmpty(user)) {
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+      refreshToken(get(user, "_id")).unwrap().then((data: { code: string; user: any }) => {
+        if (get(data, 'code') === API_CODES.AUTH.AUTH_REFRESH_TOKEN_SUC) {
+          dispatch(loginSuccess(get(data, 'user', {})));
+          // Redirect to dashboard after successful token refresh
+          router.replace("/dashboard")
+        }
+      }).catch((err: any) => {
+        console.error("Error refreshing token: ", err);
+      });
     } else {
-      // Redirect to dashboard
-      window.location.href = "/dashboard"
+      // Redirect to login if no user
+      router.replace("/login")
     }
-  }, [])
+  }, []);
 
-  const handleOnboardingComplete = (data: any) => {
-    console.log("Onboarding completed:", data)
-    // Save user data and redirect to dashboard
-    window.location.href = "/dashboard"
-  }
 
-  if (showOnboarding) {
-    return <OnboardingWizard onComplete={handleOnboardingComplete} />
-  }
-
-  return (
+  return (isRefreshLoading ? (<>
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
         <p className="mt-4 text-muted-foreground">Loading...</p>
       </div>
-    </div>
+    </div></>)
+    : <></>
   )
 }

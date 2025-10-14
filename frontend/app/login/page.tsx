@@ -7,14 +7,15 @@ import { Separator } from "@/components/ui/separator"
 import { Brain, Mail, Lock } from "lucide-react"
 import GoogleLogin from "./google-login"
 import { GoogleOAuthProvider } from "@react-oauth/google"
-import { useGoogleLoginMutation } from "@/features/auth/apiSlice";
+import { useGoogleLoginMutation, useRefreshTokenMutation } from "@/features/auth/apiSlice";
 import { useDispatch, useSelector, } from "react-redux";
 import { loginSuccess } from "@/features/auth/authSlice";
-import { get } from "lodash";
-import { ERROR_CODES } from "@/constants/apiCodes"
+import { get, isEmpty, isEqual } from "lodash";
+import { API_CODES } from "@/constants/apiCodes"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useMemo, useRef } from "react"
+import { RootState } from "@/store/store"
 
 const LoginPage = () => {
   const [googleLogin, { isLoading: isGoogleLoading, error, isError }] = useGoogleLoginMutation();
@@ -24,15 +25,13 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isError) {
-      console.error("Google login error: ", error);
-      const errorCode = get(error, 'data.code', ERROR_CODES.GEN.TECHNICAL_ERR);
+      const errorCode = get(error, 'data.code', API_CODES.GEN.TECHNICAL_ERR);
       let errorMessage = "An unexpected error occurred. Please try again.";
-      if (errorCode === ERROR_CODES.AUTH.GOOGLE_LOGIN_FAILED) {
+      if (errorCode === API_CODES.AUTH.GOOGLE_LOGIN_FAILED) {
         errorMessage = "Google login failed. Please try again.";
-      } else if (errorCode === ERROR_CODES.AUTH.TECHNICAL_ERR) {
+      } else if (errorCode === API_CODES.AUTH.TECHNICAL_ERR) {
         errorMessage = "A technical error occurred. Please try again later.";
       }
-      console.log("Displaying toast with message: ", errorMessage);
       toast({
         title: "Login Failed",
         description: errorMessage,
@@ -47,16 +46,16 @@ const LoginPage = () => {
   const googleLoginHandler = async (credential: string) => {
     const user = await googleLogin(credential).unwrap();
     console.log("Google login successful: ", user);
-    if (get(user, 'code') === ERROR_CODES.AUTH.AUTH_GOOGLE_SUCCESS) {
+    if (get(user, 'code') === API_CODES.AUTH.AUTH_GOOGLE_SUCCESS) {
       dispatch(loginSuccess(get(user, 'user', {})));
       toast({
         title: "Login Successful",
         description: "You have successfully logged in with Google.",
         duration: 3000,
-        variant: "default",
+        variant: "success",
       });
-      // Redirect to dashboard or home page
-      router.push("/dashboard");
+      // Redirect to dashboard after successful login
+      router.replace("/dashboard")
     }
   }
 

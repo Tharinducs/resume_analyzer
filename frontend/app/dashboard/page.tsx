@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Calendar, Clock, FileText, TrendingUp } from "lucide-react"
+import DashboardWelcome from "./dashbord-welcome"
 
 export default function DashboardPage() {
   const recentActivity = [
@@ -43,12 +44,7 @@ export default function DashboardPage() {
         <DashboardHeader />
         <main className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Welcome Section */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-balance">Welcome back, John!</h1>
-            <p className="text-muted-foreground text-pretty">
-              Here's an overview of your resume analysis and job matching progress.
-            </p>
-          </div>
+          <DashboardWelcome />
 
           {/* Stats Grid */}
           <DashboardStats />

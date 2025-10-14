@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, User, Settings, LogOut } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useSelector } from "react-redux"
+import { get } from "lodash";
 
 export function DashboardHeader() {
   return (

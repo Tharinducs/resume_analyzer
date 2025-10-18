@@ -6,7 +6,7 @@ const persistConfig: PersistConfig<RootState> = {
   key: "root",
   storage,
   whitelist: ["auth"],
-  blacklist: [], 
+  blacklist: ["loader"], 
 };
 
 export default persistConfig;

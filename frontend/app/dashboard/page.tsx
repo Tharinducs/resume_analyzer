@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Calendar, Clock, FileText, TrendingUp } from "lucide-react"
 import DashboardWelcome from "./dashbord-welcome"
+import DashboardSidebarContainer from "./dashbord-sidebar-container"
 
 export default function DashboardPage() {
   const recentActivity = [
@@ -39,7 +40,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar className="w-64 flex-shrink-0" />
+      <DashboardSidebarContainer />
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
         <main className="flex-1 overflow-y-auto p-6 space-y-6">

@@ -19,9 +19,13 @@ import {
   LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useDispatch } from "react-redux"
+import { useLogoutAPIMutation } from "@/features/auth/apiSlice"
+import { is } from "date-fns/locale"
 
 interface SidebarProps {
-  className?: string
+  className?: string,
+  handleLogout: () => void,
 }
 
 const navigation = [
@@ -64,9 +68,9 @@ const navigation = [
   },
 ]
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, handleLogout }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
-
+ 
   return (
     <div className={cn("flex h-full flex-col border-r border-border bg-sidebar", className)}>
       {/* Header */}
@@ -139,6 +143,7 @@ export function Sidebar({ className }: SidebarProps) {
           {!collapsed && <span className="flex-1 text-left">Profile</span>}
         </Button>
         <Button
+          onClick={() => handleLogout()}
           variant="ghost"
           className={cn(
             "w-full justify-start h-10 px-3 text-sidebar-foreground hover:bg-sidebar-accent",

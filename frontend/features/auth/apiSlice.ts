@@ -1,11 +1,10 @@
-import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
-import { ref } from "process";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include", 
+    credentials: "include",
   }),
   endpoints: (builder) => ({
     googleLogin: builder.mutation({
@@ -22,6 +21,13 @@ export const authApi = createApi({
         body: { userId },
       }),
     }),
+    logoutAPI: builder.mutation({
+      query: (userId: string) => ({
+        url: '/auth/logout',
+        method: 'POST',
+        body: { userId },
+      }),
+    }),
     getMe: builder.query({
       query: () => ({
         url: '/auth/me',
@@ -31,4 +37,4 @@ export const authApi = createApi({
   }),
 });
 
-export const { useGoogleLoginMutation, useRefreshTokenMutation, useGetMeQuery } = authApi;
+export const { useGoogleLoginMutation, useRefreshTokenMutation, useGetMeQuery, useLogoutAPIMutation } = authApi;

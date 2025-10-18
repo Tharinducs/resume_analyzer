@@ -11,6 +11,7 @@ import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
 import { store, persistor } from "@/store/store"
 import { Toaster } from "@/components/ui/toaster"
+import GlobalLoader from "@/components/ui/loader"
 
 export default function RootLayout({
   children,
@@ -26,6 +27,7 @@ export default function RootLayout({
             <ThemeProvider defaultTheme="dark" storageKey="ai-resume-analyzer-theme">
               <Suspense fallback={null}>{children}</Suspense>
             </ThemeProvider>
+            <GlobalLoader />
           </PersistGate>
         </Provider>
         <Analytics />

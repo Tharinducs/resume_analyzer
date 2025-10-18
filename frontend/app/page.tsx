@@ -15,6 +15,7 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const isFirstRender = useRef(true);
+  
   useEffect(() => {
     if (!isEmpty(user)) {
       if (isFirstRender.current) {

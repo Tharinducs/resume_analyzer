@@ -1,5 +1,5 @@
 'use client'
-import { Sidebar } from "@/components/sidebar";
+import Sidebar from "@/components/sidebar";
 import { useLogoutAPIMutation } from "@/features/auth/apiSlice";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";

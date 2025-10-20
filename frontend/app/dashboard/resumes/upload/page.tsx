@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { Sidebar } from "@/components/sidebar"
 import { FileUpload } from "@/components/file-upload"
 import { ResumeEditor } from "@/components/resume-editor"
 import { Button } from "@/components/ui/button"
@@ -92,12 +90,8 @@ export default function ResumeUploadPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar className="w-64 flex-shrink-0" />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
+    <>
+       <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm" asChild>
@@ -234,8 +228,6 @@ export default function ResumeUploadPage() {
               </div>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+    </>
   )
 }

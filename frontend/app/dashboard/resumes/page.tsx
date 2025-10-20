@@ -1,5 +1,4 @@
-import { DashboardHeader } from "@/components/dashboard-header"
-import { Sidebar } from "@/components/sidebar"
+'use client'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download, Eye, Trash2 } from "lucide-react"
+import Link from "next/link"
 
 export default function ResumesPage() {
   const resumes = [
@@ -66,11 +66,7 @@ export default function ResumesPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar className="w-64 flex-shrink-0" />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-6">
+    <>
           <div className="max-w-6xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -80,11 +76,11 @@ export default function ResumesPage() {
                   Manage and analyze your resumes with AI-powered insights.
                 </p>
               </div>
-              <Button asChild>
-                <a href="/resumes/upload">
+              <Button asChild type="button">
+                <Link href="/dashboard/resumes/upload">
                   <Upload className="mr-2 h-4 w-4" />
                   Upload Resume
-                </a>
+                </Link>
               </Button>
             </div>
 
@@ -102,7 +98,6 @@ export default function ResumesPage() {
                 </TabsList>
               </Tabs>
             </div>
-
             {/* Resume Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {resumes.map((resume) => (
@@ -196,8 +191,6 @@ export default function ResumesPage() {
               </Card>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+    </>
   )
 }

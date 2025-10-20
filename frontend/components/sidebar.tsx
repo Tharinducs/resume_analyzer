@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -19,16 +19,25 @@ import {
   LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useDispatch } from "react-redux"
-import { useLogoutAPIMutation } from "@/features/auth/apiSlice"
-import { is } from "date-fns/locale"
+import React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { get } from "lodash"
 
 interface SidebarProps {
   className?: string,
   handleLogout: () => void,
 }
+interface NavItemTypes {
+  name: string,
+  href: string,
+  icon: any,
+  current: boolean,
+  badge?: string,
+  hide?: boolean
+}
 
-const navigation = [
+const navigation: NavItemTypes[] = [
   {
     name: "Dashboard",
     href: "/dashboard",
@@ -37,40 +46,56 @@ const navigation = [
   },
   {
     name: "Resumes",
-    href: "/resumes",
+    href: "/dashboard/resumes",
     icon: FileText,
     current: false,
-    badge: "3",
+  },
+  {
+    name: "Resumes",
+    href: "/dashboard/resumes/upload",
+    icon: FileText,
+    current: false,
+    hide: true
   },
   {
     name: "Job Analyzer",
-    href: "/job-analyzer",
+    href: "/dashboard/job-analyzer",
     icon: Search,
     current: false,
   },
   {
     name: "Portfolio",
-    href: "/portfolio",
+    href: "/dashboard/portfolio",
     icon: Briefcase,
     current: false,
   },
   {
     name: "History",
-    href: "/history",
+    href: "/dashboard/history",
     icon: History,
     current: false,
   },
   {
     name: "Settings",
-    href: "/settings",
+    href: "/dashboard/settings",
     icon: Settings,
     current: false,
   },
 ]
 
-export function Sidebar({ className, handleLogout }: SidebarProps) {
+const Sidebar = ({ className, handleLogout }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false)
- 
+  const [currentNav, setCurrentNav] = useState("Dashboard")
+  const pathName = usePathname();
+
+  useEffect(() => {
+    const pathNavItem = navigation.find((item) => item.href === pathName)
+    const currentNavItemName = get(pathNavItem, 'name', "Dashboard")
+    if (currentNavItemName !== currentNav) {
+      setCurrentNav(currentNavItemName)
+    }
+  }, [])
+
   return (
     <div className={cn("flex h-full flex-col border-r border-border bg-sidebar", className)}>
       {/* Header */}
@@ -94,35 +119,37 @@ export function Sidebar({ className, handleLogout }: SidebarProps) {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
-          {navigation.map((item) => {
+          {navigation.map((item, index) => {
             const Icon = item.icon
             return (
-              <Button
-                key={item.name}
-                variant={item.current ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start h-10 px-3",
-                  item.current
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  collapsed && "px-2",
-                )}
-                asChild
-              >
-                <a href={item.href}>
-                  <Icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left">{item.name}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </>
+              <>
+                {item.hide ? <></> : <Button
+                  type="button"
+                  key={item.name}
+                  variant={currentNav === item.name ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start h-10 px-3",
+                    currentNav === item.name
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    collapsed && "px-2",
                   )}
-                </a>
-              </Button>
+                  asChild
+                >
+                  <Link key={index} href={item.href} onClick={() => setCurrentNav(item.name)}>
+                    <Icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left">{item.name}</span>
+                        {item.badge && (
+                          <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </Link>
+                </Button>}</>
             )
           })}
         </nav>
@@ -157,3 +184,5 @@ export function Sidebar({ className, handleLogout }: SidebarProps) {
     </div>
   )
 }
+
+export default React.memo(Sidebar);

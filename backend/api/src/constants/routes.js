@@ -11,3 +11,13 @@ export const AUTH_ROUTES = {
   REFRESH : `/refresh-token`,
   ME: `/me`,
 };
+
+export const RESUME_ROUTE = `${API}/resume`;
+
+export const RESUME_ROUTES = {
+  UPLOAD: `/upload`,
+  ANALYZE: `/analyze/:resumeId`,
+  GET_REPORT: `/report/:resumeId`,
+  LIST: `/list`,
+  DELETE: `/delete/:resumeId`,
+};

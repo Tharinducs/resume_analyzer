@@ -5,8 +5,9 @@ import helmet from 'helmet';
 import "./src/config/config.js"
 import { globalRateLimiter } from "./src/midlewares/rateLimit.middleware.js";
 import { errorHandler } from "./src/midlewares/errorHandler.js";
-import { API, AUTH_ROUTE } from "./src/constants/routes.js";
+import { RESUME_ROUTE, AUTH_ROUTE } from "./src/constants/routes.js";
 import authRouter from "./src/routes/auth.routes.js";
+import resumeRouter from "./src/routes/resume.routes.js";
 
 const app = express();
 
@@ -31,7 +32,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use(`${AUTH_ROUTE}`, authRouter); 
-
+app.use(`${RESUME_ROUTE}`, resumeRouter);
 app.use((req, res, next) => {
   console.log(`404 - Not Found - ${req.originalUrl}`);
   res.status(404).json({ message: "Route not found" });

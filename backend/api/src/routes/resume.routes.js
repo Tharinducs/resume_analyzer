@@ -1,5 +1,5 @@
 import express from "express";
-import { RESUME_ROUTES } from "../constants/routes";
+import { RESUME_ROUTES } from "../constants/routes.js";
 import { uploadResume, handleResumeUpload } from "../controllers/resume.controller.js";
 
 const router = express.Router();

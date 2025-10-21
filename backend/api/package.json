@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -27,8 +28,11 @@
     "mammoth": "^1.11.0",
     "mongoose": "^8.16.0",
     "multer": "^2.0.2",
+    "natural": "^8.1.0",
     "npm": "^11.4.2",
-    "pdf-parse": "^2.4.3"
+    "pdf-parse": "^2.4.5",
+    "pdf2json": "^4.0.0",
+    "pdfjs-dist": "^3.4.120"
   },
   "devDependencies": {
     "@jest/globals": "^30.0.2",

@@ -1,23 +1,31 @@
+import { PDF_EXTRACT_URL } from '../config/external.urls.js';
 import { geminiModel } from './gemini.client.js';
-import PDFParser from 'pdf2json';
+import axios from 'axios';
+import fs from 'fs';
+import FormData from '../lib/custom.formdata.js'
+import { get } from '../lib/custom.lodash.js';
 
-const pdfParser = new PDFParser();
+const formData = new FormData();
 
-export const resumeParser = async () => {
+export const resumeParser = async (file) => {
     try {
         let text = "";
+        formData.append('file', fs.createReadStream(file.path));
         if (file.mimetype === "application/pdf") {
-            pdfParser.on("pdfParser_dataReady", (pdfData) => {
-                text = pdfParser.getRawTextContent();
-            });
-            pdfParser.loadPDF(req.file.path);
-        } else if (req.file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            const result = await mammoth.extractRawText({ path: req.file.path });
+            const headers = {
+                ...formData.getHeaders(),           // includes boundary
+                'Content-Type': 'multipart/form-data', // optional — not needed but safe
+                'X-File-Type': 'application/pdf',      // custom header example
+                'X-Filename': file.name
+            };
+            const data = await axios.post(PDF_EXTRACT_URL, formData,headers)
+            text = get(data,"data.text","")
+        } else if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            const result = await mammoth.extractRawText({ path: file.path });
             text = result.value;
         } else {
             throw "Unsuported File Type"
         }
-        console.log("Extracted Text:", text);
         return text;
     }
     catch (err) {
@@ -36,7 +44,7 @@ export const extractResumeData = async (resumeText) => {
     ],
     "skills": [],
     "education": [
-        { "degree": "", "university": "", "year": "" }
+        { "degree": "", "institution": "", "year": "","startDate": "", "endDate": "" }
     ]
     }
 
@@ -45,8 +53,8 @@ export const extractResumeData = async (resumeText) => {
     `;
 
     const result = await geminiModel.generateContent(prompt)
-    const response = result.response.text()
-
+    const response = result.response.text();
+    
     try {
         const jsonStart = response.indexOf("{");
         const jsonEnd = response.lastIndexOf("}");

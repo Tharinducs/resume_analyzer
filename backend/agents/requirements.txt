@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+PyMuPDF
+pytesseract
+pdf2image
+pdfminer.six
+camelot-py[cv]
+opencv-python
+pandas
+python-multipart

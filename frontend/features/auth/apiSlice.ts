@@ -1,11 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import baseQuery from "../baseQuery";
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include",
-  }),
+  baseQuery: baseQuery,
   endpoints: (builder) => ({
     googleLogin: builder.mutation({
       query: (token: string) => ({

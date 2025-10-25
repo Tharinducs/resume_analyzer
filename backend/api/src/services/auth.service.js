@@ -1,5 +1,5 @@
 import * as authRepo from "../repositories/auth.repository.js"
-import { get, isEmpty } from "../utils/custom.lodash.js"
+import { get, isEmpty } from "../lib/custom.lodash.js"
 import { generateToken, verifyRefreshToken, generateRefreshToken } from "../utils/jwt.util.js"
 import { PROVIDER } from "../constants/auth.js"
 import { validatePassword } from "../utils/utility.js"

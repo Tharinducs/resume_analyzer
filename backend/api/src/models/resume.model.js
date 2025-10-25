@@ -25,8 +25,8 @@ const resumeSchema = new mongoose.Schema({
         institution: { type: String },
         degree: { type: String },
         fieldOfStudy: { type: String },
-        startDate: { type: Date },
-        endDate: { type: Date },
+        startDate: { type: String },
+        endDate: { type: String },
         grade: { type: String },
       }
     ],
@@ -34,8 +34,9 @@ const resumeSchema = new mongoose.Schema({
       {
         company: { type: String },
         position: { type: String },
-        startDate: { type: Date },
-        endDate: { type: Date },
+        year: { type: String},
+        startDate: { type: String },
+        endDate: { type: String },
         responsibilities: { type: String },
       }
     ],

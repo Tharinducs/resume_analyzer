@@ -1,4 +1,4 @@
-import { get, isEmpty } from "../utils/custom.lodash.js";
+import { get, isEmpty } from "../lib/custom.lodash.js";
 import { handleLogin, handleProviderLogin, handleRefreshToken, handleRegister,getUser } from "../services/auth.service.js";
 import { verifyProviderLogin } from "../utils/utility.js";
 import { ENVIRONMENTS } from "../constants/common.js";

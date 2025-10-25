@@ -1,7 +1,7 @@
 import multer from 'multer';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
 import { parseResumeTextAndSave } from '../services/resume.service.js';
-import { get } from '../utils/custom.lodash.js';
+import { get } from '../lib/custom.lodash.js';
 import { API_CODES } from '../constants/apiCodes.js';
 import { ERROR_MESSAGES } from '../errors/errorMessages.js';
 

@@ -1,91 +1,130 @@
-# 🚀 AI Resume & Portfolio Analyzer  
+# Resume Analyzer 📊
 
-An intelligent web application that helps job seekers and professionals improve their **resumes** and **portfolios** using AI. The system analyzes uploaded resumes, GitHub/portfolio links, and provides actionable insights, suggestions, and scoring to help users stand out in their job applications.  
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-teal?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-Built with **React, Redux, Radix UI, Node.js/Express, MongoDB, and Gemini/OpenAI integration**, featuring **social login (Google, LinkedIn)** and a clean modern UI.  
-
----
-
-## ✨ Features  
-
-### 🔑 Authentication & User Management  
-- Social login via **Google** and **LinkedIn** (OAuth 2.0).  
-- Secure JWT-based authentication.  
-- Profile management (update name, email, picture).  
-
-### 📄 Resume Analyzer  
-- Upload resumes in **PDF/DOCX** format.  
-- AI-powered extraction of:  
-  - Skills  
-  - Experience  
-  - Education  
-  - Achievements  
-- Generates feedback on:  
-  - Grammar & clarity  
-  - Role-specific keywords  
-  - ATS (Applicant Tracking System) compatibility  
-- Resume **scoring system** (e.g., 0–100).  
-
-### 🌐 Portfolio & GitHub Analyzer  
-- Analyze user-provided **portfolio websites** and **GitHub repos**.  
-- AI generates insights on:  
-  - Code quality & best practices  
-  - Project relevance for target roles  
-  - UI/UX strengths & weaknesses  
-- Portfolio **strength score** out of 100.  
-
-### 📊 Dashboard  
-- Personalized dashboard with:  
-  - Resume score  
-  - Portfolio score  
-  - Strengths & weaknesses  
-  - Actionable improvement tips  
-- Trend graph (improvement over time).  
-
-### 📑 Job Role Optimization  
-- User selects target role (e.g., **Frontend Engineer, QA Engineer, Solution Architect**).  
-- AI suggests:  
-  - Missing skills  
-  - Relevant certifications  
-  - Projects to showcase  
-
-### 🛠️ Tech Stack  
-- **Frontend:** React (Vite/Next.js), Redux, Radix UI, TailwindCSS  
-- **Backend:** Node.js, Express.js, Gemini/OpenAI API  
-- **Database:** MongoDB (Atlas)  
-- **Authentication:** OAuth (Google, LinkedIn) + JWT  
-- **Deployment:** Vercel (frontend) + Render/Heroku (backend) + MongoDB Atlas  
+> An intelligent resume analysis platform powered by AI that helps evaluate and optimize resumes for better job matching.
 
 ---
 
-## ⚙️ Installation  
+## 📋 Table of Contents
 
-### Prerequisites  
-- Node.js (>= 18.x)  
-- MongoDB Atlas account  
-- Gemini/OpenAI API key  
-- Google/LinkedIn OAuth credentials  
+- [About](#-about)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Local Setup](#-local-setup)
+  - [Frontend Setup](#frontend-setup-nextjs)
+  - [Backend Setup](#backend-setup-nodejs--express)
+  - [FastAPI Agent Setup](#fastapi-agent-setup-python)
+- [Environment Variables](#-environment-variables)
+- [Scripts](#-scripts)
+- [Testing](#-testing)
+- [Deployment Notes](#-deployment-notes)
+- [Folder Summary](#-folder-summary)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Author](#-author)
 
-### Steps  
+---
+
+## 🎯 About
+
+Resume Analyzer is a comprehensive platform that leverages artificial intelligence to analyze, evaluate, and provide insights on resumes. The application features a modern web interface built with Next.js, a robust backend API powered by Node.js and Express, and intelligent AI processing capabilities through FastAPI agents.
+
+The platform helps job seekers optimize their resumes by providing detailed analysis, suggestions for improvement, and matching capabilities with job requirements.
+
+---
+
+## ✨ Features
+
+- 🔍 **AI-Powered Resume Analysis** - Advanced resume parsing and evaluation
+- 🔐 **Secure Authentication** - JWT-based auth with Google OAuth integration
+- 📊 **Detailed Analytics** - Comprehensive resume scoring and insights
+- 🎨 **Modern UI/UX** - Responsive design built with Next.js
+- 🚀 **Real-time Processing** - Fast AI-driven analysis using FastAPI
+- 📱 **Mobile Responsive** - Works seamlessly across all devices
+- 🔄 **Auto-sync** - Real-time updates and synchronization
+- 📈 **Progress Tracking** - Monitor improvement over time
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14
+- **Styling**: Tailwind CSS / CSS Modules
+- **Authentication**: Google OAuth
+- **State Management**: React Context / Redux
+
+### Backend API
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB
+- **Authentication**: JWT + Google OAuth
+- **Security**: Helmet, CORS, Rate Limiting
+
+### AI Agent Service
+- **Framework**: FastAPI (Python)
+- **AI/ML**: Gemini API integration
+- **Processing**: Resume parsing and analysis
+- **Port**: 8001
+
+---
+
+## 📋 Prerequisites
+
+Before running this project, make sure you have the following installed:
+
+- **Node.js** (v18.0.0 or higher)
+- **Python** (v3.9 or higher)
+- **MongoDB** (v6.0 or higher)
+- **npm** or **yarn** package manager
+- **Git** for version control
+
+### Required API Keys
+- Google OAuth Client ID
+- Gemini API Key
+- MongoDB connection string
+
+---
+
+## 🚀 Local Setup
+
+### One-Shot Setup (All Services)
+
 ```bash
-# Clone repository
-git clone https://github.com/your-username/ai-resume-portfolio-analyzer.git
+# Clone the repository
+git clone https://github.com/Tharinducs/resume_analyzer.git
+cd resume_analyzer
 
-# Navigate to project
-cd ai-resume-portfolio-analyzer
-
-# Install dependencies
+# Setup Frontend
+cd frontend
 npm install
+cp .env.example .env.development
+# Edit .env.development with your values
 
-# Setup environment variables
-cp .env.example .env
-
-# Run frontend
-cd client
+# Setup Backend API
+cd ../backend/api
 npm install
-npm run dev
+cp env/example.env env/development.env
+# Edit env/development.env with your values
 
-# Run backend
-cd server
-npm install
-npm run dev
+# Setup FastAPI Agent
+cd ../agents
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Start all services (run each in separate terminals)
+# Terminal 1 - Frontend (Port 3000)
+cd frontend && npm run dev
+
+# Terminal 2 - Backend API (Port 3001)
+cd backend/api && npm run dev
+
+# Terminal 3 - FastAPI Agent (Port 8001)
+cd backend/agents && uvicorn app.main:app --reload --port 8001

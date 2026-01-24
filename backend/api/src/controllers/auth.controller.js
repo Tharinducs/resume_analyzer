@@ -28,6 +28,7 @@ export const loginWithProvider = async (req, res, next) => {
 
         res.status(200).json({ code: API_CODES.AUTH.AUTH_GOOGLE_SUC, user });
     } catch (err) {
+        console.warn(`[GOOGLE LOGIN FAILED] at ${new Date().toISOString()} - Reason: ${err.message}`);
         next(new AppError(API_CODES.AUTH.GOOGLE_LOGIN_FAILED, ERROR_MESSAGES[API_CODES.AUTH.GOOGLE_LOGIN_FAILED, 500]))
     }
 }

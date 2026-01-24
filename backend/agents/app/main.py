@@ -1,54 +1,34 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
-import fitz  # PyMuPDF
-from pdf2image import convert_from_bytes
-import pytesseract
-from pdfminer.high_level import extract_text
-import camelot
-import tempfile
-import os
+from app.extractor.pdf import extract_pdf
+from app.extractor.doc import extract_doc
+from app.extractor.normalize import normalize_resume_text
+from app.utils.linkedin_detector import is_linkedin_cv
+from app.utils.linkedin_normalizer import normalize_linkedin_cv
+from app.utils.layout import apply_layout_fixes
+from app.extractor.normalize import normalize_resume_text
 
 app = FastAPI()
 
-@app.post('/extract')
-async def extract(file: UploadFile = File(...)):
+@app.post("/extract")
+async def extract_resume(file: UploadFile = File(...)):
+    print("Received file:", file.filename)  # Debugging line
     raw = await file.read()
-    text = ''
-    tables = []
+    
+    text = extract_pdf(raw)
+    
+    print("Extracted raw text:", text)  # Debugging line
+    
+    text = apply_layout_fixes(text)
 
-    # Try extracting text with PyMuPDF
-    try:
-        doc = fitz.open(stream=raw, filetype='pdf')
-        for page in doc:
-            text += page.get_text()
-    except Exception:
-        text = ''
+    # ✅ LinkedIn detection
+    if is_linkedin_cv(text):
+        normalized = normalize_linkedin_cv(text)
+        source = "linkedin"
+    else:
+        normalized = normalize_resume_text(text)
+        source = "generic"
 
-    # Fallback to pdfminer if text is empty
-    if not text.strip():
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                tmp.write(raw)
-                tmp.flush()
-                text = extract_text(tmp.name)
-        finally:
-            os.remove(tmp.name)
-
-    # Extract tables using Camelot
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(raw)
-            tmp.flush()
-            tables_data = camelot.read_pdf(tmp.name, pages='all', flavor='lattice')
-            for t in tables_data:
-                tables.append(t.df.to_dict())
-    except Exception as e:
-        print('Camelot error:', e)
-
-    # OCR fallback
-    if not text.strip():
-        images = convert_from_bytes(raw)
-        for img in images:
-            text += pytesseract.image_to_string(img)
-
-    return JSONResponse({'text': text, 'tables': tables})
+    return {
+        "source": source,
+        "parsedText": normalized
+    }

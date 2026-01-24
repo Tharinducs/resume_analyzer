@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FileUpload } from "@/components/file-upload"
 import { ResumeEditor } from "@/components/resume-editor"
 import { Button } from "@/components/ui/button"
@@ -8,10 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, FileText, Zap, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useUploadFileMutation } from "@/features/resume/apiSlice"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/store/store"
-import { get } from "lodash"
+import { get, isEmpty } from "lodash"
 import { title } from "process"
+import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -60,15 +61,40 @@ const mockResumeData = {
 export default function ResumeUploadPage() {
   const [uploadStep, setUploadStep] = useState<"upload" | "processing" | "editing">("upload")
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [resumeData, setResumeData] = useState(mockResumeData)
+  const [resumeData, setResumeData] = useState({} as any)
   const [uploadFileApi, { isLoading, isSuccess, isError }] = useUploadFileMutation()
   const { user} = useSelector((state: RootState)=> state.auth)
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    if(isLoading){
+      setUploadStep("processing");
+    }
+  },[isLoading,isError])
 
   const handleFileUpload = async (file: File) => {
-    setUploadStep("processing")
-    setUploadProgress(0)
-    const fileData = uploadFileApi({file,userId : get(user,"_id"),title:"CV1"})
-    console.log(fileData,"fileData")
+    setUploadProgress(100);
+    try {
+        const fileData = await uploadFileApi({
+            file,
+            userId: get(user, "_id"),
+            title: "CV1"
+        }).unwrap(); // Important: use .unwrap() to get the actual response
+        
+        console.log(fileData, "fileData");
+        const prossesdData = get(fileData,"resume.extractedData",{})
+        // setUploadStep("complete");
+        if(fileData && !isEmpty(prossesdData)){
+           setResumeData(prossesdData)
+           setUploadStep("editing")
+        }else{
+          setUploadStep("upload")
+        }
+    } catch (error) {
+        console.error("Upload failed:", error);
+        setUploadStep("upload")
+        setUploadProgress(0);
+    }
   }
 
   const handleFileRemove = () => {

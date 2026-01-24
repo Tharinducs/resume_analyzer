@@ -16,6 +16,7 @@ export const resumeApi = createApi({
                     url: '/resume/upload',
                     method: 'POST',
                     body: formData,
+                    timeout: 120000,
                 };
             },
         }),

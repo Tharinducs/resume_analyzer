@@ -5,9 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "start:prod": "cross-env NODE_ENV=production node index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "dev": "node ./scripts/check-node.js && cross-env NODE_ENV=development nodemon index.js",
+    "start:prod": "node ./scripts/check-node.js && cross-env NODE_ENV=production node index.js",
+    "test": "node ./scripts/check-node.js && node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "author": "",
   "license": "ISC",
@@ -39,5 +39,8 @@
     "jest": "^30.0.2",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

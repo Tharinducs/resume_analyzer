@@ -8,3 +8,4 @@ camelot-py[cv]
 opencv-python
 pandas
 python-multipart
+regex

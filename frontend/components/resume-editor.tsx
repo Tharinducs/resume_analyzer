@@ -18,9 +18,9 @@ interface ResumeData {
     location: string
     summary: string
   }
-  experience: Array<{
+  workExperience: Array<{
     id: string
-    title: string
+    position: string
     company: string
     location: string
     startDate: string
@@ -63,18 +63,18 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
       endDate: "",
       description: "",
     }
-    setData({ ...data, experience: [...data.experience, newExp] })
+    //setData({ ...data, experience: [...data.experience, newExp] })
   }
 
   const removeExperience = (id: string) => {
-    setData({ ...data, experience: data.experience.filter((exp) => exp.id !== id) })
+    //setData({ ...data, experience: data.experience.filter((exp) => exp.id !== id) })
   }
 
   const updateExperience = (id: string, field: string, value: string) => {
-    setData({
-      ...data,
-      experience: data.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
-    })
+    // setData({
+    //   ...data,
+    //   experience: data.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
+    // })
   }
 
   const addEducation = () => {
@@ -218,7 +218,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {data.experience.map((exp, index) => (
+          {data.workExperience.map((exp, index) => (
             <div key={exp.id} className="space-y-4">
               {index > 0 && <Separator />}
               <div className="flex items-start justify-between">
@@ -227,8 +227,8 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                     <div className="space-y-2">
                       <Label>Job Title</Label>
                       <Input
-                        value={exp.title}
-                        onChange={(e) => updateExperience(exp.id, "title", e.target.value)}
+                        value={exp.position}
+                        onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>

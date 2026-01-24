@@ -1,1 +1,2 @@
 export const PDF_EXTRACT_URL = `${process.env.AGENT_APP_URL}/extract`
+export const DOC_EXTRACT_URL = `${process.env.AGENT_APP_URL}/extract-doc`

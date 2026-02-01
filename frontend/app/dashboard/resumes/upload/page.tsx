@@ -13,6 +13,8 @@ import { RootState } from "@/store/store"
 import { get, isEmpty } from "lodash"
 import { title } from "process"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -62,6 +64,8 @@ export default function ResumeUploadPage() {
   const [uploadStep, setUploadStep] = useState<"upload" | "processing" | "editing">("upload")
   const [uploadProgress, setUploadProgress] = useState(0)
   const [resumeData, setResumeData] = useState({} as any)
+  const [title, setTitle] = useState("")
+  const [titleError, setTitleError] = useState("")
   const [uploadFileApi, { isLoading, isSuccess, isError }] = useUploadFileMutation()
   const { user} = useSelector((state: RootState)=> state.auth)
   const dispatch = useDispatch()
@@ -78,7 +82,7 @@ export default function ResumeUploadPage() {
         const fileData = await uploadFileApi({
             file,
             userId: get(user, "_id"),
-            title: "CV1"
+            title: title || "My Resume"
         }).unwrap(); // Important: use .unwrap() to get the actual response
         
         console.log(fileData, "fileData");
@@ -179,8 +183,31 @@ export default function ResumeUploadPage() {
         {/* Upload Section */}
         {uploadStep === "upload" && (
           <div className="space-y-6">
-            <FileUpload onFileUpload={handleFileUpload} onFileRemove={handleFileRemove} />
-
+            <div className="space-y-2">
+              <Label htmlFor="name">Title for Resume</Label>
+              <Input
+                id="name"
+                value={title}
+                onChange={(e) => {
+                  if(titleError && !isEmpty(e.target.value)){
+                    setTitleError("");
+                  }
+                  setTitle(e.target.value)
+                }}
+                placeholder="Enter the title for your resume"
+                required
+                className={titleError ? "border-red-500" : ""}
+                onBlur={(e)=>{
+                  if(isEmpty(e.target.value)){
+                    setTitleError("Title is required");
+                  }else{
+                    setTitleError("");
+                  }
+                }}
+              />
+              {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
+            </div>
+            {title && <FileUpload onFileUpload={handleFileUpload} onFileRemove={handleFileRemove} />}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">

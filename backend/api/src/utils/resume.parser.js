@@ -4,6 +4,10 @@ import axios from 'axios';
 import fs from 'fs';
 import FormData from '../lib/custom.formdata.js'
 import { get } from '../lib/custom.lodash.js';
+import createAIProvider from '../ai/ai.factory.js';
+import { provider as aiProviderType } from '../config/ai.config.js';
+
+const aiProvider = createAIProvider(aiProviderType);
 
 export const resumeParser = async (file) => {
     try {
@@ -114,9 +118,8 @@ ${resumeText}
 `;
 
 
-
-    const result = await geminiModel.generateContent(prompt)
-    const response = result.response.text();
+    const response = await aiProvider.generateText(prompt);
+    console.log("resume extraction result:", response);
 
     try {
         const jsonStart = response.indexOf("{");

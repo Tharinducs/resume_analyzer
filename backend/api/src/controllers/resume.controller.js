@@ -40,3 +40,15 @@ export const handleResumeUpload = async (req, res) => {
     res.status(500).json({ code: API_CODES.RESUME.UPLOAD_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.UPLOAD_FAILED]});
   }
 }
+
+export const getResumesListByUser = async (req, res) => {
+  const userId = get(req, "params.userId")
+
+  try {
+    const resumesList = await getResumesListByUserId(userId)
+    res.status(200).json({ code: API_CODES.RESUME.FETCH_SUC ,message: "Resumes fetched successfully", resumes: resumesList });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: API_CODES.RESUME.FETCH_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.FETCH_FAILED]});
+  }
+}

@@ -11,8 +11,11 @@ def extract_pdf(raw: bytes) -> str:
         doc = fitz.open(stream=raw, filetype="pdf")
         for page in doc:
             text += page.get_text()
-    except:
-        pass
+    except (RuntimeError, ValueError, TypeError) as e:
+        # Only catch known exceptions
+        print(f"PyMuPDF extraction failed: {e}")
+        # Optionally reraise if you want to propagate
+        # raise
 
     if not text.strip():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:

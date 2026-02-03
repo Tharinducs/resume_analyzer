@@ -11,10 +11,7 @@ import { useUploadFileMutation } from "@/features/resume/apiSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import { get, isEmpty } from "lodash"
-import { title } from "process"
-import { hideLoader, showLoader } from "@/features/common/loaderSlice"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+import FileUploadForm from "./file-upload-form"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -64,46 +61,48 @@ export default function ResumeUploadPage() {
   const [uploadStep, setUploadStep] = useState<"upload" | "processing" | "editing">("upload")
   const [uploadProgress, setUploadProgress] = useState(0)
   const [resumeData, setResumeData] = useState({} as any)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [titleError, setTitleError] = useState("")
   const [uploadFileApi, { isLoading, isSuccess, isError }] = useUploadFileMutation()
-  const { user} = useSelector((state: RootState)=> state.auth)
+  const { user } = useSelector((state: RootState) => state.auth)
   const dispatch = useDispatch()
 
-  useEffect(()=>{
-    if(isLoading){
+  useEffect(() => {
+    if (isLoading) {
       setUploadStep("processing");
     }
-  },[isLoading,isError])
+  }, [isLoading, isError])
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async () => {
     setUploadProgress(100);
     try {
-        const fileData = await uploadFileApi({
-            file,
-            userId: get(user, "_id"),
-            title: title || "My Resume"
-        }).unwrap(); // Important: use .unwrap() to get the actual response
-        
-        console.log(fileData, "fileData");
-        const prossesdData = get(fileData,"resume.extractedData",{})
-        // setUploadStep("complete");
-        if(fileData && !isEmpty(prossesdData)){
-           setResumeData(prossesdData)
-           setUploadStep("editing")
-        }else{
-          setUploadStep("upload")
-        }
-    } catch (error) {
-        console.error("Upload failed:", error);
+      const fileData = await uploadFileApi({
+        file: uploadedFile,
+        userId: get(user, "_id"),
+        title: title || "My Resume"
+      }).unwrap(); // Important: use .unwrap() to get the actual response
+
+      console.log(fileData, "fileData");
+      const prossesdData = get(fileData, "resume.extractedData", {})
+      // setUploadStep("complete");
+      if (fileData && !isEmpty(prossesdData)) {
+        setResumeData(prossesdData)
+        setUploadStep("editing")
+      } else {
         setUploadStep("upload")
-        setUploadProgress(0);
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setUploadStep("upload")
+      setUploadProgress(0);
     }
   }
 
   const handleFileRemove = () => {
     setUploadStep("upload")
     setUploadProgress(0)
+    setUploadedFile(null)
   }
 
   const handleSaveResume = (data: any) => {
@@ -154,10 +153,10 @@ export default function ResumeUploadPage() {
               <div className="flex items-center space-x-2">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${uploadStep === "processing"
-                      ? "bg-primary text-primary-foreground"
-                      : uploadStep === "editing"
-                        ? "bg-green-500 text-white"
-                        : "bg-muted text-muted-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : uploadStep === "editing"
+                      ? "bg-green-500 text-white"
+                      : "bg-muted text-muted-foreground"
                     }`}
                 >
                   {uploadStep === "editing" ? <CheckCircle className="h-4 w-4" /> : "2"}
@@ -168,8 +167,8 @@ export default function ResumeUploadPage() {
               <div className="flex items-center space-x-2">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${uploadStep === "editing"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                     }`}
                 >
                   3
@@ -182,70 +181,23 @@ export default function ResumeUploadPage() {
 
         {/* Upload Section */}
         {uploadStep === "upload" && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Title for Resume</Label>
-              <Input
-                id="name"
-                value={title}
-                onChange={(e) => {
-                  if(titleError && !isEmpty(e.target.value)){
-                    setTitleError("");
-                  }
-                  setTitle(e.target.value)
-                }}
-                placeholder="Enter the title for your resume"
-                required
-                className={titleError ? "border-red-500" : ""}
-                onBlur={(e)=>{
-                  if(isEmpty(e.target.value)){
-                    setTitleError("Title is required");
-                  }else{
-                    setTitleError("");
-                  }
-                }}
-              />
-              {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
-            </div>
-            {title && <FileUpload onFileUpload={handleFileUpload} onFileRemove={handleFileRemove} />}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5" />
-                  <span>What happens next?</span>
-                </CardTitle>
-                <CardDescription>Here's what our AI will analyze in your resume</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Content Analysis</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Extract personal information</li>
-                      <li>• Parse work experience</li>
-                      <li>• Identify skills and keywords</li>
-                      <li>• Analyze education background</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Quality Assessment</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• ATS compatibility check</li>
-                      <li>• Format and structure review</li>
-                      <li>• Content quality scoring</li>
-                      <li>• Industry-specific feedback</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <FileUploadForm
+            uploadedFile={uploadedFile}
+            title={title}
+            setTitle={setTitle}
+            titleError={titleError}
+            setTitleError={setTitleError}
+            setUploadedFile={setUploadedFile}
+            handleFileUpload={handleFileUpload}
+            handleFileRemove={handleFileRemove}
+          />
         )}
 
         {/* Processing Section */}
         {uploadStep === "processing" && (
           <FileUpload
-            onFileUpload={handleFileUpload}
+            setUploadedFile={setUploadedFile}
+            uploadedFile={uploadedFile}
             onFileRemove={handleFileRemove}
             isUploading={true}
             uploadProgress={uploadProgress}

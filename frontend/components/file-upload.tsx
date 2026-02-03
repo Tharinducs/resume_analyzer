@@ -10,23 +10,25 @@ import { Upload, FileText, X, CheckCircle, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FileUploadProps {
-  onFileUpload: (file: File) => void
   onFileRemove: () => void
   isUploading?: boolean
   uploadProgress?: number
   acceptedFileTypes?: string[]
   maxFileSize?: number
+  setUploadedFile: (file: File | null) => void
+  uploadedFile: File | null
 }
 
 export function FileUpload({
-  onFileUpload,
   onFileRemove,
   isUploading = false,
   uploadProgress = 0,
   acceptedFileTypes = [".pdf", ".docx", ".doc"],
   maxFileSize = 10 * 1024 * 1024, // 10MB
+  setUploadedFile,
+  uploadedFile,
 }: FileUploadProps) {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+
   const [error, setError] = useState<string | null>(null)
 
   const onDrop = useCallback(
@@ -48,10 +50,9 @@ export function FileUpload({
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0]
         setUploadedFile(file)
-        onFileUpload(file)
       }
     },
-    [onFileUpload],
+    [setUploadedFile],
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

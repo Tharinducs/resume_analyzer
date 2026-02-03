@@ -44,7 +44,12 @@ export const saveRefreshToken = async (userId, token) => {
 
 export const findRefreshToken = async (token) => {
     try {
-        return await RefreshToken.findOne({ token });
+        if (typeof token !== "string" || token.trim() === "") {
+            throw new Error("Invalid refresh token");
+        }
+
+        const safeToken = token.trim();
+        return await RefreshToken.findOne({ token: safeToken });
     } catch (err) {
         console.error("Error finding refresh token:", err);
         throw err;

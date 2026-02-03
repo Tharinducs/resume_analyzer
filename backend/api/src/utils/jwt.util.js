@@ -13,17 +13,9 @@ export const generateRefreshToken = (user) => {
 };
 
 export const verifyRefreshToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
-  } catch (err) {
-    throw err;
-  }
+  return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 };
 
 export const verifyAuthToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    throw err;
-  }
+  return jwt.verify(token, process.env.JWT_SECRET);
 };

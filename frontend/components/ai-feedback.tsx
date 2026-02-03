@@ -116,11 +116,9 @@ export function AIFeedback() {
       sections.map((section) =>
         section.id === sectionId
           ? {
-              ...section,
-              suggestions: section.suggestions.map((suggestion) =>
-                suggestion.id === suggestionId ? { ...suggestion, accepted: true } : suggestion,
-              ),
-            }
+            ...section,
+            suggestions: mapAndUpdateSuggestions(section, suggestionId, true),
+          }
           : section,
       ),
     )
@@ -131,13 +129,17 @@ export function AIFeedback() {
       sections.map((section) =>
         section.id === sectionId
           ? {
-              ...section,
-              suggestions: section.suggestions.map((suggestion) =>
-                suggestion.id === suggestionId ? { ...suggestion, accepted: false } : suggestion,
-              ),
+            ...section,
+            suggestions: mapAndUpdateSuggestions(section, suggestionId, false),
             }
           : section,
       ),
+    )
+  }
+
+  const mapAndUpdateSuggestions = (section: any, suggestionId: string, accepted: boolean) => {
+    return section.suggestions.map((suggestion: any) =>
+      suggestion.id === suggestionId ? { ...suggestion, accepted } : suggestion,
     )
   }
 
@@ -259,13 +261,12 @@ export function AIFeedback() {
                         {section.suggestions.map((suggestion) => (
                           <div
                             key={suggestion.id}
-                            className={`p-4 rounded-lg border ${
-                              suggestion.accepted === true
+                            className={`p-4 rounded-lg border ${suggestion.accepted === true
                                 ? "bg-green-500/5 border-green-500/20"
                                 : suggestion.accepted === false
                                   ? "bg-red-500/5 border-red-500/20"
                                   : "bg-muted/50 border-border"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-start justify-between space-x-4">
                               <div className="flex items-start space-x-3 flex-1">

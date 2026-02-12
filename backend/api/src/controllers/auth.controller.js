@@ -29,7 +29,7 @@ export const loginWithProvider = async (req, res, next) => {
         res.status(200).json({ code: API_CODES.AUTH.AUTH_GOOGLE_SUC, user });
     } catch (err) {
         console.warn(`[GOOGLE LOGIN FAILED] at ${new Date().toISOString()} - Reason: ${err.message}`);
-        next(new AppError(API_CODES.AUTH.GOOGLE_LOGIN_FAILED, ERROR_MESSAGES[API_CODES.AUTH.GOOGLE_LOGIN_FAILED, 500]))
+        next(new AppError(API_CODES.AUTH.GOOGLE_LOGIN_FAILED, ERROR_MESSAGES[API_CODES.AUTH.GOOGLE_LOGIN_FAILED], 401))
     }
 }
 
@@ -46,7 +46,7 @@ export const registerUser = async (req, res) => {
         if (!isEmpty(status)) {
             next(err)
         }
-        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR, 500]))
+        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR], 500))
     }
 }
 
@@ -84,7 +84,7 @@ export const doLogin = async (req, res) => {
         if (!isEmpty(status)) {
             next(err)
         }
-        next(new AppError(API_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[API_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, 401]))
+        next(new AppError(API_CODES.AUTH.USERNAME_PASSWORD_INCORRECT, ERROR_MESSAGES[API_CODES.AUTH.USERNAME_PASSWORD_INCORRECT], 401))
     }
 }
 
@@ -119,7 +119,8 @@ export const refreshToken = async (req, res, next) => {
         const user = await getUser(get(req, "body.userId"));
         res.status(200).json({ code: API_CODES.AUTH.AUTH_REFRESH_TOKEN_SUC, user });
     } catch (err) {
-        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR, 500]))
+        console.error("Refresh Token Error:", err);
+        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR], 500))
     }
 }
 

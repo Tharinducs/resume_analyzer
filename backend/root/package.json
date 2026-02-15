@@ -1,0 +1,31 @@
+{
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "start:api:dev": "node ./scripts/check-node.js && cross-env NODE_ENV=development nodemon index.js services/api/index.js",
+    "start:worker": "node apps/worker/src/index.js",
+    "build:config": "tsc --build packages/config",
+    "build:ai": "tsc --build packages/ai",
+    "build:packages": "npm run build:config && npm run build:ai",
+    "watch:packages": "tsc --build packages/config packages/ai --watch"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bullmq": "^5.0.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "groq-sdk": "^0.37.0",
+    "ioredis": "^5.3.2",
+    "mongoose": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "cross-env": "^7.0.3",
+    "jest": "^30.0.2",
+    "nodemon": "^3.1.10",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@ra/ai",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "dependencies": {
+    "@ra/config": "*"
+  },
+  "scripts": {
+    "build": "tsc --build"
+  }
+}

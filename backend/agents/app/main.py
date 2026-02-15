@@ -6,11 +6,14 @@ from app.utils.linkedin_detector import is_linkedin_cv
 from app.utils.linkedin_normalizer import normalize_linkedin_cv
 from app.utils.layout import apply_layout_fixes
 from app.extractor.normalize import normalize_resume_text
+from typing import Annotated
 
 app = FastAPI()
 
+FileUpload = Annotated[UploadFile, File(...)]
+
 @app.post("/extract")
-async def extract_resume(file: UploadFile = File(...)):
+async def extract_resume(file: FileUpload):
     print("Received file:", file.filename)  # Debugging line
     raw = await file.read()
     

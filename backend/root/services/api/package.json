@@ -1,0 +1,42 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "This is a resume analyzer API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node ./scripts/check-node.js && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "express-validator": "^7.2.1",
+    "form-data": "^4.0.4",
+    "google-auth-library": "^10.1.0",
+    "helmet": "^8.1.0",
+    "install": "^0.13.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "mammoth": "^1.11.0",
+    "mongoose": "^8.16.0",
+    "multer": "^2.0.2",
+    "natural": "^8.1.0",
+    "npm": "^11.4.2"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.0.2",
+    "cross-env": "^7.0.3",
+    "jest": "^30.0.2",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

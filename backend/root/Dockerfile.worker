@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# ---------- Root deps ----------
+COPY package*.json ./
+RUN npm install
+
+# ---------- Shared packages ----------
+COPY packages ./packages
+COPY scripts ./scripts
+COPY tsconfig.base.json ./
+
+RUN npm run build:packages
+
+# ---------- Worker deps ----------
+COPY services/worker/package*.json ./services/worker/
+RUN cd services/worker && npm install
+
+# ---------- Copy Worker source ----------
+COPY services/worker ./services/worker
+
+CMD ["npm", "run", "start:worker"]

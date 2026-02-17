@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# ---------- Root deps ----------
+COPY package*.json ./
+RUN npm install
+
+# ---------- Shared packages ----------
+COPY packages ./packages
+COPY scripts ./scripts
+COPY tsconfig.base.json ./
+
+RUN npm run build:packages
+
+# ---------- API deps ----------
+COPY services/api/package*.json ./services/api/
+RUN cd services/api && npm install
+
+# ---------- Copy API source ----------
+COPY services/api ./services/api
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:api:dev"]

@@ -10,7 +10,7 @@ export const COOKIE_SETTINGS = {
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 }
 
-export const RESUME_UPLOAD_PATH = "uploads/resumes/";
+export const RESUME_UPLOAD_PATH = "services/api/uploads/resumes/";
 
 export const ALLOWED_RESUME_FILE_TYPES = [".pdf", ".doc", ".docx"];
 

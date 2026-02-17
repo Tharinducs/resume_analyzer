@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
+import { db } from "@ra/config";
 
-const resumeSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+const resumeSchema = new db.Schema({
+  userId: { type: db.Schema.Types.ObjectId, ref: "User", required: true },
   title: { type: String, required: true },
   fileUrl: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
@@ -49,6 +49,6 @@ const resumeSchema = new mongoose.Schema({
   }
 });
 
-const Resume = mongoose.model("Resume", resumeSchema);
+const Resume = db.model("Resume", resumeSchema);
 
 export default Resume;

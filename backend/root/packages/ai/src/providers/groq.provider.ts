@@ -10,6 +10,7 @@ class GroqProvider extends AIService {
   }
 
   async generateText({ prompt }: GenerateTextProps) {
+    console.log("Generating text with GroqProvider, prompt length:", prompt.length);
     const completion = await this.client.chat.completions.create({
       model: "llama3-70b-8192",
       messages: [{ role: "user", content: prompt }],

@@ -114,9 +114,7 @@ Resume Content:
 ${resumeText}
 `;
 
-
-  const response = await aiProvider.generateText(prompt);
-  console.log("resume extraction result:", response);
+  const response = await aiProvider.generateText({prompt});
 
   try {
     const jsonStart = response.indexOf("{");

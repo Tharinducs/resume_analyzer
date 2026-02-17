@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-const { Schema } = mongoose;
+import { db } from "@ra/config";
+const { Schema } = db;
 
 const refreshTokenSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -7,4 +7,4 @@ const refreshTokenSchema = new Schema({
     createdAt: { type: Date, default: Date.now, expires: 3600*24*7 } // Token expires after 7 days
 });
 
-export default mongoose.model('RefreshToken', refreshTokenSchema);
+export default db.model('RefreshToken', refreshTokenSchema);

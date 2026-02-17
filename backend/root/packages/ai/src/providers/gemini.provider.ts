@@ -12,6 +12,7 @@ class GeminiProvider extends AIService {
   }
 
   async generateText({ prompt }:GenerateTextProps) {
+    console.log("Generating text with GeminiProvider, prompt length:", prompt.length);
     const result = await this.model.generateContent(prompt);
     return result.response.text();
   }

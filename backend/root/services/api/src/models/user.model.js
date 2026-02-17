@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
+import { db } from "@ra/config";
 import bcrypt from "bcrypt";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new db.Schema(
     {
         name: { type: String,required: true},
         email: { type: String, unique: true ,required: true},
@@ -35,4 +35,4 @@ userSchema.set("toJSON", {
   },
 });
 
-export default mongoose.model("User",userSchema)
+export default db.model("User",userSchema)

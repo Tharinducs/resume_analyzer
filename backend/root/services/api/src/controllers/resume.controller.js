@@ -31,6 +31,7 @@ export const handleResumeUpload = async (req, res) => {
   const title = get(req, "body.title")
   const path = get(req, "file.path")
 
+  console.log("Received resume upload request:", { userId, title, file: req.file });
   try {
     const extractedData = await parseResumeTextAndSave(req.file, userId, title, path)
     console.log(extractedData,"extractedData")

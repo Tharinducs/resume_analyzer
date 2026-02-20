@@ -29,4 +29,8 @@ export const ENV = {
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   AI_PROVIDER: process.env.AI_PROVIDER || 'gemini',
   GROQ_API_KEY: process.env.GROQ_API_KEY || '',
+  REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
+  REDIS_PORT: process.env.REDIS_PORT || '6379',
+  WORKER_PORT: process.env.WORKER_PORT || '3002',
+  PORT: process.env.PORT || '3001',
 };

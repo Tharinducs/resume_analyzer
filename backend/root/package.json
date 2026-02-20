@@ -6,19 +6,18 @@
   ],
   "scripts": {
     "start:api:dev": "node ./scripts/check-node.js && cross-env NODE_ENV=development nodemon index.js services/api/index.js",
-    "start:worker": "node apps/worker/src/index.js",
+    "start:worker:dev": "node ./scripts/check-node.js && cross-env NODE_ENV=development nodemon index.js services/worker/index.js",
     "build:config": "tsc --build packages/config",
     "build:ai": "tsc --build packages/ai",
     "build:packages": "npm run build:config && npm run build:ai",
     "watch:packages": "tsc --build packages/config packages/ai --watch",
     "docker:build": "docker compose up -d --build"
-    
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "bullmq": "^5.69.3",
     "dotenv": "^16.4.0",
-    "express": "^4.19.0",
+    "express": "^4.22.1",
     "groq-sdk": "^0.37.0",
     "ioredis": "^5.9.3",
     "mongoose": "^7.3.1"

@@ -1,7 +1,7 @@
 import app from "./app.js";
-import { connectDB } from "@ra/config";
+import { connectDB, ENV } from "@ra/config";
 
-const PORT = process.env.PORT || 5000;
+const PORT = ENV.PORT;
 
 try {
   await connectDB()

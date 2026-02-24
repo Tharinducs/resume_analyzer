@@ -13,6 +13,7 @@
   },
   "references": [
     { "path": "packages/config" },
-    { "path": "packages/ai" }
+    { "path": "packages/ai" },
+    { "path": "packages/shared" }
   ]
 }

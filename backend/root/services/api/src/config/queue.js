@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
-import { PDF_QUEUE_NAME, connectionConfig } from "@ra/config"
+import { PDF_QUEUE_NAME } from "@ra/shared"
+import { connectionConfig} from "@ra/config"
 
 const pdfQueue = new Queue(PDF_QUEUE_NAME, {
   connection: connectionConfig,

@@ -1,10 +1,7 @@
 import multer from 'multer';
 import * as crypto from 'node:crypto';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
-import { parseResumeTextAndSave } from '../services/resume.service.js';
-import { get } from '../lib/custom.lodash.js';
-import { API_CODES } from '../constants/apiCodes.js';
-import { ERROR_MESSAGES } from '../errors/errorMessages.js';
+import { get, API_CODES, ERROR_MESSAGES } from '@ra/shared';
 import { publishToQueue } from '../utils/publish.js';
 
 const upload = multer({ dest: RESUME_UPLOAD_PATH });
@@ -37,9 +34,9 @@ export const handleResumeUpload = async (req, res) => {
   try {
     const uniqueId = crypto.randomUUID();
     await publishToQueue({data:{ userId, title, path, file: req.file },id: uniqueId});
-    const extractedData = await parseResumeTextAndSave(req.file, userId, title, path)
-    console.log(extractedData,"extractedData")
-    res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: extractedData });
+    // const extractedData = await parseResumeTextAndSave(req.file, userId, title, path)
+    // console.log(extractedData,"extractedData")
+    res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: { id: uniqueId, userId, title, path } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: API_CODES.RESUME.UPLOAD_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.UPLOAD_FAILED]});

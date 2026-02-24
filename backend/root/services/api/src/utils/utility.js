@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { isBoolean } from "../lib/custom.lodash.js";
+import { isBoolean } from "@ra/shared";
 import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

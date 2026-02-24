@@ -31,7 +31,10 @@
     "mongoose": "^8.16.0",
     "multer": "^2.0.2",
     "natural": "^8.1.0",
-    "npm": "^11.4.2"
+    "npm": "^11.4.2",
+    "@ra/config": "*",
+    "@ra/ai": "*",
+    "@ra/shared": "*"
   },
   "devDependencies": {
     "@jest/globals": "^30.0.2",

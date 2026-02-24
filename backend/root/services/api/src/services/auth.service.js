@@ -1,9 +1,8 @@
 import * as authRepo from "../repositories/auth.repository.js"
-import { get, isEmpty } from "../lib/custom.lodash.js"
+import { get, isEmpty, AppError } from "@ra/shared";
 import { generateToken, verifyRefreshToken, generateRefreshToken } from "../utils/jwt.util.js"
 import { PROVIDER } from "../constants/auth.js"
 import { validatePassword } from "../utils/utility.js"
-import { AppError } from "../errors/AppError.js"
 import { API_CODES } from "../constants/apiCodes.js"
 import { ERROR_MESSAGES } from "../errors/errorMessages.js"
 

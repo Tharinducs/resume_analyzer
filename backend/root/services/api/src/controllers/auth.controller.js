@@ -1,8 +1,8 @@
-import { get, isEmpty } from "../lib/custom.lodash.js";
+import { get, isEmpty, AppError } from "@ra/shared";
 import { handleLogin, handleProviderLogin, handleRefreshToken, handleRegister,getUser } from "../services/auth.service.js";
 import { verifyProviderLogin } from "../utils/utility.js";
 import { ENVIRONMENTS } from "../constants/common.js";
-import { AppError } from "../errors/AppError.js";
+
 import { API_CODES } from "../constants/apiCodes.js";
 import { ERROR_MESSAGES } from "../errors/errorMessages.js";
 

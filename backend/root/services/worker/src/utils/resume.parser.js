@@ -1,10 +1,8 @@
-import { DOC_EXTRACT_URL, PDF_EXTRACT_URL } from '../config/external.urls.js';
 import axios from 'axios';
 import fs from 'node:fs';
-import FormData from '../lib/custom.formdata.js'
-import { get } from '../lib/custom.lodash.js';
+import { get,FormData } from '@ra/lib';
 import { createAIProvider } from '@ra/ai';
-import { provider as aiProviderType } from '@ra/config';
+import { provider as aiProviderType , DOC_EXTRACT_URL, PDF_EXTRACT_URL } from '@ra/config';
 
 const aiProvider = createAIProvider(aiProviderType);
 

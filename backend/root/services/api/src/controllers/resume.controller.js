@@ -33,7 +33,7 @@ export const handleResumeUpload = async (req, res) => {
   console.log("Received resume upload request:", { userId, title, file: req.file });
   try {
     const uniqueId = crypto.randomUUID();
-    await publishToQueue({data:{ userId, title, path, file: req.file },id: uniqueId});
+    await publishToQueue({ userId, title, path, file: req.file,id:uniqueId });
     // const extractedData = await parseResumeTextAndSave(req.file, userId, title, path)
     // console.log(extractedData,"extractedData")
     res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: { id: uniqueId, userId, title, path } });

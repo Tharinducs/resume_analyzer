@@ -1,8 +1,8 @@
 import axios from 'axios';
 import fs from 'node:fs';
-import { get,FormData } from '@ra/lib';
+import { get,FormData,DOC_EXTRACT_URL , PDF_EXTRACT_URL } from '@ra/shared';
 import { createAIProvider } from '@ra/ai';
-import { provider as aiProviderType , DOC_EXTRACT_URL, PDF_EXTRACT_URL } from '@ra/config';
+import { provider as aiProviderType } from '@ra/config';
 
 const aiProvider = createAIProvider(aiProviderType);
 

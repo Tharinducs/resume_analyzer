@@ -33,4 +33,5 @@ export const ENV = {
   REDIS_PORT: process.env.REDIS_PORT || '6379',
   WORKER_PORT: process.env.WORKER_PORT || '3002',
   PORT: process.env.PORT || '3001',
+  AGENT_APP_URL: process.env.AGENT_APP_URL || 'http://localhost:8001',
 };

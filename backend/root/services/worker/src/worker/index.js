@@ -7,8 +7,8 @@ const worker = new Worker(
   PDF_QUEUE_NAME,
   async (job) => {
     console.log("Processing job:", job.id, "with data:", job.data);
-    const jobData = get(job, "data", {})
-    await parseResumeTextAndSave(jobData)
+    const jobData = get(job, "data", {});
+    await parseResumeTextAndSave(jobData);
     console.log("Completed job:", job.id);
   },
   { connection: connectionConfig }

@@ -5,6 +5,10 @@ export const saveResume = async (resumeData: any) => {
   return await resume.save();
 };
 
+export const updateResume = async (resumeId: string, updateData: any) => {
+  return await Resume.findByIdAndUpdate(resumeId, updateData, { new: true });
+};
+
 export const getResumeByUserId = async (userId: string) => {
   return await Resume.findOne({ userId }).sort({ createdAt: -1 });
 };

@@ -5,7 +5,9 @@ const resumeSchema = new db.Schema({
   title: { type: String, required: true },
   fileUrl: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
   parsedText: { type: String },
+  jobId: { type: String },
   qualityAssessment: {
     atsScore: Number,
     formatScore: Number,

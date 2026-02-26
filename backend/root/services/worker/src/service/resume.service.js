@@ -1,7 +1,8 @@
 import { resumeParser, extractResumeData } from "../utils/resume.parser.js";
 // import { assessATS } from "../utils/ats.checker.js";
 // import { analyzeQuality } from "../utils/qulity.anlayser.js";
-import { saveResume, getResumesListByUserId as getResumesListByUserIdService, AppError, API_CODES, ERROR_MESSAGES } from "@ra/shared";
+import { updateResume, AppError, API_CODES, ERROR_MESSAGES } from "@ra/shared";
+import moment from "moment";
 
 // export const processResume = async (parsedText, userId, jobKeywords) => {
 //     try {
@@ -25,16 +26,17 @@ import { saveResume, getResumesListByUserId as getResumesListByUserIdService, Ap
 //     }
 // };
 
-export const parseResumeTextAndSave = async ({ file, userId, title, path,id }) => {
+export const parseResumeTextAndSave = async ({ file, userId, title, path,resumeId }) => {
     try {
         const parsedText = await resumeParser(file)
         const extractedData = await extractResumeData(parsedText);
-        await saveResume({
+        await updateResume(resumeId, {
             userId,
             title,
             fileUrl: path,
             parsedText,
-            extractedData
+            extractedData,
+            updatedAt: moment().toISOString(),
         });
     } catch (err) {
         console.error("Error parsing resume file:", err);

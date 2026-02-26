@@ -1,7 +1,7 @@
 import multer from 'multer';
 import * as crypto from 'node:crypto';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
-import { get, API_CODES, ERROR_MESSAGES } from '@ra/shared';
+import { get, API_CODES, ERROR_MESSAGES, saveResume } from '@ra/shared';
 import { publishToQueue } from '../utils/publish.js';
 
 const upload = multer({ dest: RESUME_UPLOAD_PATH });
@@ -30,13 +30,12 @@ export const handleResumeUpload = async (req, res) => {
   const title = get(req, "body.title")
   const path = get(req, "file.path")
 
-  console.log("Received resume upload request:", { userId, title, file: req.file });
   try {
     const uniqueId = crypto.randomUUID();
-    await publishToQueue({ userId, title, path, file: req.file,id:uniqueId });
-    // const extractedData = await parseResumeTextAndSave(req.file, userId, title, path)
-    // console.log(extractedData,"extractedData")
-    res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: { id: uniqueId, userId, title, path } });
+    const savedResume = await saveResume({ userId, title, fileUrl: path, jobId: uniqueId,});
+    console.log("Resume metadata saved successfully:", savedResume);
+    await publishToQueue({ userId, title, path, file: req.file,id:uniqueId, resumeId: get(savedResume,"_id") }, "pdfQueue");
+    res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: savedResume });
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: API_CODES.RESUME.UPLOAD_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.UPLOAD_FAILED]});

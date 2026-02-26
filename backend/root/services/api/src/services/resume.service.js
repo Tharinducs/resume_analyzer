@@ -9,3 +9,19 @@ export const getResumesListByUserId = async (userId) => {
         throw new AppError(API_CODES.RESUME.UNABLE_FETCH_RESUMES, ERROR_MESSAGES[API_CODES.RESUME.UNABLE_FETCH_RESUMES], 503)
     }
 }
+
+export const saveResumeWithJobId = async ({ userId, title, fileUrl,jobId }) => {
+    try {
+        const savedResume = await saveResume({
+            userId,
+            title,
+            fileUrl,
+            jobId,
+            status: "processing"
+        });
+        return savedResume;
+    } catch (err) {
+        console.error("Error saving resume with job ID:", err);
+        throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
+    }
+}

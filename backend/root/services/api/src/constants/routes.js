@@ -19,5 +19,6 @@ export const RESUME_ROUTES = {
   ANALYZE: `/analyze/:resumeId`,
   GET_REPORT: `/report/:resumeId`,
   LIST: `/list`,
+  LIST_BY_USER: `/list/:userId`,
   DELETE: `/delete/:resumeId`,
 };

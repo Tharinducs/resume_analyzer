@@ -19,5 +19,8 @@ export const API_CODES = {
   },
   GEN:{
     TECHNICAL_ERR: 'TECHNICAL_ERR',
+  },
+  RESUME:{
+    UPLOAD_SUC: 'UPLOAD_SUC'
   }
 };

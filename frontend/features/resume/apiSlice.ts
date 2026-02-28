@@ -20,7 +20,14 @@ export const resumeApi = createApi({
                 };
             },
         }),
+        getResumesListByUser: builder.query({
+            query: (userId) => ({
+                url: `/resume/list/${userId}`,
+                method: 'GET',
+            }),
+        }),
+        
     })
 })
 
-export const { useUploadFileMutation } = resumeApi;
+export const { useUploadFileMutation, useGetResumesListByUserQuery } = resumeApi;

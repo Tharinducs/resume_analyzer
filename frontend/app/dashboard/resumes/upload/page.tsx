@@ -12,6 +12,10 @@ import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import { get, isEmpty } from "lodash"
 import FileUploadForm from "./file-upload-form"
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription } from "@/components/ui/alert-dialog"
+import { API_CODES } from "@/constants/apiCodes"
+import { useRouter } from "next/navigation"
+import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -60,17 +64,24 @@ const mockResumeData = {
 export default function ResumeUploadPage() {
   const [uploadStep, setUploadStep] = useState<"upload" | "processing" | "editing">("upload")
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [resumeData, setResumeData] = useState({} as any)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [titleError, setTitleError] = useState("")
-  const [uploadFileApi, { isLoading, isSuccess, isError }] = useUploadFileMutation()
-  const { user } = useSelector((state: RootState) => state.auth)
-  const dispatch = useDispatch()
+  const [uploadFileApi, { isLoading, isError }] = useUploadFileMutation()
+  const { auth : { user }, loader: { loading } } = useSelector((state: RootState) => state);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (isLoading) {
       setUploadStep("processing");
+    }
+    return () => {
+       if (!loading) {
+        dispatch(hideLoader());
+       }
     }
   }, [isLoading, isError])
 
@@ -84,13 +95,11 @@ export default function ResumeUploadPage() {
       }).unwrap(); // Important: use .unwrap() to get the actual response
 
       console.log(fileData, "fileData");
-      const prossesdData = get(fileData, "resume.extractedData", {})
-      // setUploadStep("complete");
-      if (fileData && !isEmpty(prossesdData)) {
-        setResumeData(prossesdData)
-        setUploadStep("editing")
-      } else {
+      const getStatCode = get(fileData, "code", "");
+      if (isEmpty(fileData) || getStatCode !== API_CODES.RESUME.UPLOAD_SUC) {
         setUploadStep("upload")
+      } else {
+        setIsProcessing(true)
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -116,8 +125,32 @@ export default function ResumeUploadPage() {
     window.location.href = "/resumes/analysis"
   }
 
+  const redirectToResumeList = () => {
+    dispatch(showLoader())
+    setIsProcessing(false)
+    router.push("/dashboard/resumes")
+  }
+
   return (
     <>
+      <AlertDialog  open={isProcessing}  onOpenChange={setIsProcessing}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent className="min-h-[300px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Successful 🎉</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your file has been uploaded successfully and is being processed.
+              <br />
+              <br />
+              You can continue working. We'll notify you by email once the results are ready.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button onClick={() => redirectToResumeList()}>OK</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center space-x-4">

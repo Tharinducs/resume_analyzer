@@ -51,6 +51,8 @@ const resumeSchema = new db.Schema({
   }
 });
 
+resumeSchema.index({"title": "text", "extractedData.personalInfo.name": "text", "extractedData.workExperience.company": "text" });
+
 const Resume = db.model("Resume", resumeSchema);
 
 export { Resume };

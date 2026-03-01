@@ -13,7 +13,7 @@ import { useGetResumesListByUserQuery } from "@/features/resume/apiSlice"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
-import {  useEffect } from "react"
+import { useEffect } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
 export default function ResumesPage() {
@@ -50,6 +50,10 @@ export default function ResumesPage() {
         return <Badge variant="default">Analyzed</Badge>
       case "processing":
         return <Badge variant="secondary">Processing</Badge>
+      case "processed":
+        return <Badge variant="secondary">Processed</Badge>
+      case "failed":
+        return <Badge variant="destructive">Failed</Badge>
       default:
         return <Badge variant="outline">Draft</Badge>
     }
@@ -77,13 +81,13 @@ export default function ResumesPage() {
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search resumes..." className="pl-10" />
+          <Input disabled={isEmpty} placeholder="Search resumes..." className="pl-10" />
         </div>
         <Tabs defaultValue="all" className="w-auto">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="analyzed">Analyzed</TabsTrigger>
-            <TabsTrigger value="processing">Processing</TabsTrigger>
+            <TabsTrigger disabled={isEmpty} value="all">All</TabsTrigger>
+            <TabsTrigger disabled={isEmpty} value="analyzed">Analyzed</TabsTrigger>
+            <TabsTrigger disabled={isEmpty} value="processing">Processing</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -96,7 +100,7 @@ export default function ResumesPage() {
                 <div className="flex items-center space-x-2">
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base truncate">{get(resume,'title')}</CardTitle>
+                    <CardTitle className="text-base truncate">{get(resume, 'title')}</CardTitle>
                     <CardDescription className="flex items-center space-x-2 mt-1">
                       <Calendar className="h-3 w-3" />
                       <span>{moment(get(resume, 'updatedAt', new Date())).fromNow()}</span>
@@ -168,15 +172,15 @@ export default function ResumesPage() {
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No resumes yet</h3>
             {!isError && <>
-            <p className="text-muted-foreground mb-4">
-              Upload your first resume to get started with AI analysis.
-            </p>
-            <Button asChild>
-              <a href="/resumes/upload">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Resume
-              </a>
-            </Button>
+              <p className="text-muted-foreground mb-4">
+                Upload your first resume to get started with AI analysis.
+              </p>
+              <Button asChild>
+                <Link href="/dashboard/resumes/upload">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Resume
+                </Link>
+              </Button>
             </>}
           </CardContent>
         </Card>

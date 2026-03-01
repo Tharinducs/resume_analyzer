@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 import { API_CODES } from "@/constants/apiCodes"
 import { useRouter } from "next/navigation"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
+import { useToast } from "@/hooks/use-toast"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -70,18 +71,19 @@ export default function ResumeUploadPage() {
   const [title, setTitle] = useState("")
   const [titleError, setTitleError] = useState("")
   const [uploadFileApi, { isLoading, isError }] = useUploadFileMutation()
-  const { auth : { user }, loader: { loading } } = useSelector((state: RootState) => state);
+  const { auth: { user }, loader: { loading } } = useSelector((state: RootState) => state);
   const router = useRouter();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isLoading) {
       setUploadStep("processing");
     }
     return () => {
-       if (!loading) {
+      if (!loading) {
         dispatch(hideLoader());
-       }
+      }
     }
   }, [isLoading, isError])
 
@@ -94,15 +96,26 @@ export default function ResumeUploadPage() {
         title: title || "My Resume"
       }).unwrap(); // Important: use .unwrap() to get the actual response
 
-      console.log(fileData, "fileData");
       const getStatCode = get(fileData, "code", "");
       if (isEmpty(fileData) || getStatCode !== API_CODES.RESUME.UPLOAD_SUC) {
         setUploadStep("upload")
+        toast({
+          title: "Upload Failed",
+          description: "Failed to upload resume.",
+          duration: 5000,
+          variant: "destructive",
+        });
       } else {
         setIsProcessing(true)
       }
     } catch (error) {
       console.error("Upload failed:", error);
+      toast({
+        title: "Upload Failed",
+        description: "An error occurred while uploading your resume. Please try again.",
+        duration: 5000,
+        variant: "destructive",
+      });
       setUploadStep("upload")
       setUploadProgress(0);
     }
@@ -133,7 +146,7 @@ export default function ResumeUploadPage() {
 
   return (
     <>
-      <AlertDialog  open={isProcessing}  onOpenChange={setIsProcessing}>
+      <AlertDialog open={isProcessing} onOpenChange={setIsProcessing}>
         <AlertDialogTrigger asChild></AlertDialogTrigger>
         <AlertDialogContent className="min-h-[300px]">
           <AlertDialogHeader>

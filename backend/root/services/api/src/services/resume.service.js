@@ -10,14 +10,16 @@ export const getResumesListByUserId = async (userId) => {
     }
 }
 
-export const saveResumeWithJobId = async ({ userId, title, fileUrl,jobId }) => {
+export const saveResumeWithJobId = async ({ userId, title, fileUrl,jobId, size, fileType }) => {
     try {
         const savedResume = await saveResume({
             userId,
             title,
             fileUrl,
             jobId,
-            status: "processing"
+            status: "processing",
+            size,
+            fileType
         });
         return savedResume;
     } catch (err) {

@@ -1,9 +1,10 @@
 import multer from 'multer';
 import * as crypto from 'node:crypto';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
-import { get, API_CODES, ERROR_MESSAGES } from '@ra/shared';
+import { get, API_CODES, ERROR_MESSAGES, MIME_TO_FILE_TYPE } from '@ra/shared';
 import { publishToQueue } from '../utils/publish.js';
 import { saveResumeWithJobId, getResumesListByUserId } from '../services/resume.service.js';
+import { formatFileSize } from '../utils/utility.js';
 
 const upload = multer({ dest: RESUME_UPLOAD_PATH });
 
@@ -32,9 +33,11 @@ export const handleResumeUpload = async (req, res) => {
   const path = get(req, "file.path")
 
   try {
+    console.log("Received resume upload request for userId:", userId, "with file:", req.file);
     const uniqueId = crypto.randomUUID();
-    const savedResume = await saveResumeWithJobId({ userId, title, fileUrl: path, jobId: uniqueId,});
-    console.log("Resume metadata saved successfully:", savedResume);
+    const fileSize = formatFileSize(get(req, "file.size"));
+    const fileType = MIME_TO_FILE_TYPE[get(req, "file.mimetype")];
+    const savedResume = await saveResumeWithJobId({ userId, title, fileUrl: path, jobId: uniqueId, size: fileSize, fileType});
     await publishToQueue({ userId, title, path, file: req.file,id:uniqueId, resumeId: get(savedResume,"_id") }, "pdfQueue");
     res.status(200).json({ code: API_CODES.RESUME.UPLOAD_SUC ,message: "Resume uploaded successfully", resume: savedResume });
   } catch (err) {

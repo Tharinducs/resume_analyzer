@@ -4,6 +4,7 @@ import baseQuery from "../baseQuery";
 export const resumeApi = createApi({
     reducerPath: 'resume',
     baseQuery: baseQuery,
+    tagTypes: ["Resumes"],  
     endpoints: (builder) => ({
         uploadFile: builder.mutation({
             query: ({ file, title, userId }) => {
@@ -19,12 +20,14 @@ export const resumeApi = createApi({
                     timeout: 120000,
                 };
             },
+            invalidatesTags: ["Resumes"],
         }),
         getResumesListByUser: builder.query({
             query: (userId) => ({
                 url: `/resume/list/${userId}`,
                 method: 'GET',
             }),
+            providesTags: ["Resumes"],
         }),
         
     })

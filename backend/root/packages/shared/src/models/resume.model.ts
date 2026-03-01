@@ -1,4 +1,5 @@
 import { db } from "@ra/config";
+import { size } from "lodash";
 
 const resumeSchema = new db.Schema({
   userId: { type: db.Schema.Types.ObjectId, ref: "User", required: true },
@@ -8,13 +9,15 @@ const resumeSchema = new db.Schema({
   updatedAt: { type: Date, default: Date.now },
   parsedText: { type: String },
   jobId: { type: String },
+  size: { type: String },
+  fileType: { type: String },
   qualityAssessment: {
     atsScore: Number,
     formatScore: Number,
     contentQuality: Number,
     feedback: String,
   },
-  status: { type: String, enum: ['Processing', 'Analyzed', 'Failed'], default: 'Processing' },
+  status: { type: String, enum: ['processing', 'analyzed', 'failed','processed'], default: 'processing' },
   extractedData: {
     personalInfo: {
       name: { type: String },
@@ -47,7 +50,7 @@ const resumeSchema = new db.Schema({
         description: { type: String }
       }
     ],
-    skills: [String]
+    skills: [String],
   }
 });
 

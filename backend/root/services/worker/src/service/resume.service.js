@@ -37,8 +37,16 @@ export const parseResumeTextAndSave = async ({ file, userId, title, path,resumeI
             parsedText,
             extractedData,
             updatedAt: moment().toISOString(),
+            status: "processed"
         });
     } catch (err) {
+         await updateResume(resumeId, {
+            userId,
+            title,
+            fileUrl: path,
+            updatedAt: moment().toISOString(),
+            status: "failed"
+        });
         console.error("Error parsing resume file:", err);
         throw new AppError(API_CODES.RESUME.UNABLE_PARSE_THE_FILE, ERROR_MESSAGES[API_CODES.RESUME.UNABLE_PARSE_THE_FILE], 503)
     }

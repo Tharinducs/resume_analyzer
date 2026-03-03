@@ -148,18 +148,18 @@ export default function ResumeUploadPage() {
     <>
       <AlertDialog open={isProcessing} onOpenChange={setIsProcessing}>
         <AlertDialogTrigger asChild></AlertDialogTrigger>
-        <AlertDialogContent className="min-h-[300px]">
+        <AlertDialogContent className="min-h-[320px] flex flex-col justify-center">
           <AlertDialogHeader>
-            <AlertDialogTitle>Upload Successful 🎉</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-center text-xl">Upload Successful 🎉</AlertDialogTitle>
+            <AlertDialogDescription className="text-left leading-relaxed mt-4 fzs-18 text-md text-muted-foreground">
               Your file has been uploaded successfully and is being processed.
               <br />
               <br />
               You can continue working. We'll notify you by email once the results are ready.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button onClick={() => redirectToResumeList()}>OK</Button>
+          <AlertDialogFooter className="justify-center">
+            <Button onClick={() => redirectToResumeList()}>OK, Continue</Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

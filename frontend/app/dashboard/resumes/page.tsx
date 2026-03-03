@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { RootState } from "@/store/store"
@@ -16,6 +15,7 @@ import { ResumeTypeForList } from "@/types/Resume"
 import { useEffect } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
+import { DropdownMenu, DropdownMenuPortal, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
   const userId = get(user, "_id", "");
@@ -94,48 +94,61 @@ export default function ResumesPage() {
       {/* Resume Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {resumes.map((resume: ResumeTypeForList) => (
-          <Card key={resume._id} className="group hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base truncate">{get(resume, 'title')}</CardTitle>
+          <Card key={resume._id} className="group hover:shadow-md transition-shadow overflow-visible relative">
+            <CardHeader className="pb-3 relative">
+              <div className="flex items-start justify-between gap-2">
+                {/* Left Section */}
+                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                  <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base truncate max-w-full">
+                      {get(resume, 'title')}
+                    </CardTitle>
+
                     <CardDescription className="flex items-center space-x-2 mt-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{moment(get(resume, 'updatedAt', new Date())).fromNow()}</span>
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      <span className="truncate">
+                        {moment(get(resume, 'updatedAt', new Date())).fromNow()}
+                      </span>
                     </CardDescription>
                   </div>
                 </div>
+
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
                 </DropdownMenu>
               </div>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-muted-foreground">Score:</span>
-                  {get(resume, 'status') === "analyzed" ? (
-                    <span className={`font-semibold ${getScoreColor(get(resume, 'score', 0))}`}>{get(resume, 'score', 0)}%</span>
+                  {get(resume, 'status') === 'analyzed' ? (
+                    <span className={`font-semibold ${getScoreColor(get(resume, 'score', 0))}`}>
+                      {get(resume, 'score', 0)}%
+                    </span>
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
@@ -153,7 +166,7 @@ export default function ResumesPage() {
                   <Eye className="mr-2 h-3 w-3" />
                   View
                 </Button>
-                {resume.status === "analyzed" && (
+                {resume.status === 'analyzed' && (
                   <Button size="sm" className="flex-1">
                     <TrendingUp className="mr-2 h-3 w-3" />
                     Analyze

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download, Eye, Trash2 } from "lucide-react"
+import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download, Eye, Trash2, ChevronRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { RootState } from "@/store/store"
 import { useDispatch, useSelector } from "react-redux"
@@ -12,15 +12,32 @@ import { useGetResumesListByUserQuery } from "@/features/resume/apiSlice"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
-import { useEffect } from "react"
+import {  useEffect, useState } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
 import { DropdownMenu, DropdownMenuPortal, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import useDebounce from "@/hooks/use-debounce"
+import { PAGE_SIZE } from "@/constants/apiCodes"
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
+  const[searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const userId = get(user, "_id", "");
-  const { data, isLoading, isError } = useGetResumesListByUserQuery(userId, { skip: !userId });
+  
+  const debouncedSearchItem = useDebounce(searchTerm, 500);
+
+  const { data, isLoading, isError, isFetching } = useGetResumesListByUserQuery({
+    userId,
+    page,
+    limit: PAGE_SIZE,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    search: debouncedSearchItem
+  }, { skip: !userId });
+
   const resumes = get(data, "resumes", []);
+   const pagination  = get(data, "pagination", null)
+  const totalPages  = get(pagination, "totalPages", 1)
   const isEmpty = !isLoading && resumes.length === 0;
   const dispatch = useDispatch();
 
@@ -31,12 +48,12 @@ export default function ResumesPage() {
   }, [isError]);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading || isFetching) {
       dispatch(showLoader());
     } else {
       dispatch(hideLoader());
     }
-  }, [isLoading]);
+  }, [isLoading, isFetching]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-500"
@@ -98,11 +115,11 @@ export default function ResumesPage() {
             <CardHeader className="pb-3 relative">
               <div className="flex items-start justify-between gap-2">
                 {/* Left Section */}
-                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div className="flex items-start space-x-2 flex-1 min-w-0 overflow-hidden">
                   <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
 
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base truncate max-w-full">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <CardTitle className="text-base break-words line-clamp-2 leading-snug">
                       {get(resume, 'title')}
                     </CardTitle>
 
@@ -176,6 +193,50 @@ export default function ResumesPage() {
             </CardContent>
           </Card>
         ))}
+        {pagination && totalPages > 1 &&  (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-muted-foreground">
+            Page {pagination.page} of {totalPages} &mdash; {pagination.total} total
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pagination.hasPrev || isFetching}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Prev
+            </Button>
+
+            {/* Page number buttons */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => Math.abs(p - page) <= 2)
+              .map((p) => (
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "outline"}
+                  size="sm"
+                  disabled={isFetching}
+                  onClick={() => setPage(p)}
+                  className="w-9"
+                >
+                  {p}
+                </Button>
+              ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pagination.hasNext || isFetching}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* Empty State for when no resumes */}

@@ -24,3 +24,5 @@ export const API_CODES = {
     UPLOAD_SUC: 'UPLOAD_SUC'
   }
 };
+
+export const PAGE_SIZE = 10;

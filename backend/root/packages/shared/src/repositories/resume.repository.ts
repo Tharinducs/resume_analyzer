@@ -9,9 +9,20 @@ export const updateResume = async (resumeId: string, updateData: any) => {
   return await Resume.findByIdAndUpdate(resumeId, updateData, { new: true });
 };
 
-export const getResumeByUserId = async (userId: string) => {
-  return await Resume.findOne({ userId }).sort({ createdAt: -1 });
-};
+export const getResumeByUserIdWithPagination = async (
+  filter: Record<string, any>,
+  skip: number,
+  limit: number
+) => {
+  return await Promise.all([
+    Resume.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Resume.countDocuments(filter),
+  ])
+}
 
 export const getResumesListByUserId = async (userId: string) => {
   return await Resume.find({ userId }).sort({ createdAt: -1 });

@@ -1,10 +1,11 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQuery from "../baseQuery";
+import { ResumeListParams, ResumeListResponse } from "@/types/resume";
 
 export const resumeApi = createApi({
     reducerPath: 'resume',
     baseQuery: baseQuery,
-    tagTypes: ["Resumes"],  
+    tagTypes: ["Resumes"],
     endpoints: (builder) => ({
         uploadFile: builder.mutation({
             query: ({ file, title, userId }) => {
@@ -22,14 +23,20 @@ export const resumeApi = createApi({
             },
             invalidatesTags: ["Resumes"],
         }),
-        getResumesListByUser: builder.query({
-            query: (userId) => ({
+        getResumesListByUser: builder.query<ResumeListResponse, ResumeListParams>({
+            query: ({ userId, page = 1, limit = 9, status = "all", search = "" }) => ({
                 url: `/resume/list/${userId}`,
                 method: 'GET',
+                params: {
+                    page,
+                    limit,
+                    ...(status !== "all" && { status }),
+                    ...(search.trim() && { search: search.trim() }),
+                },
             }),
             providesTags: ["Resumes"],
         }),
-        
+
     })
 })
 

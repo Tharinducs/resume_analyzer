@@ -12,32 +12,33 @@ import { useGetResumesListByUserQuery } from "@/features/resume/apiSlice"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
-import {  useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
 import { DropdownMenu, DropdownMenuPortal, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import useDebounce from "@/hooks/use-debounce"
 import { PAGE_SIZE } from "@/constants/apiCodes"
+import { RESUME_STATUS, RESUME_STATUS_LABELS } from "@/constants/resume"
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
-  const[searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const userId = get(user, "_id", "");
-  
+
   const debouncedSearchItem = useDebounce(searchTerm, 500);
 
   const { data, isLoading, isError, isFetching } = useGetResumesListByUserQuery({
     userId,
     page,
     limit: PAGE_SIZE,
-    status: statusFilter === "all" ? undefined : statusFilter,
+    status: statusFilter,
     search: debouncedSearchItem
   }, { skip: !userId });
 
   const resumes = get(data, "resumes", []);
-   const pagination  = get(data, "pagination", null)
-  const totalPages  = get(pagination, "totalPages", 1)
+  const pagination = get(data, "pagination", null)
+  const totalPages = get(pagination, "totalPages", 1)
   const isEmpty = !isLoading && resumes.length === 0;
   const dispatch = useDispatch();
 
@@ -63,14 +64,14 @@ export default function ResumesPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "analyzed":
-        return <Badge variant="default">Analyzed</Badge>
-      case "processing":
-        return <Badge variant="secondary">Processing</Badge>
-      case "processed":
-        return <Badge variant="secondary">Processed</Badge>
-      case "failed":
-        return <Badge variant="destructive">Failed</Badge>
+      case RESUME_STATUS.ANALYZED:
+        return <Badge variant="default">{RESUME_STATUS_LABELS[RESUME_STATUS.ANALYZED]}</Badge>
+      case RESUME_STATUS.PROCESSING:
+        return <Badge variant="secondary">{RESUME_STATUS_LABELS[RESUME_STATUS.PROCESSING]}</Badge>
+      case RESUME_STATUS.PROCESSED:
+        return <Badge variant="secondary">{RESUME_STATUS_LABELS[RESUME_STATUS.PROCESSED]}</Badge>
+      case RESUME_STATUS.FAILED:
+        return <Badge variant="destructive">{RESUME_STATUS_LABELS[RESUME_STATUS.FAILED]}</Badge>
       default:
         return <Badge variant="outline">Draft</Badge>
     }
@@ -98,13 +99,15 @@ export default function ResumesPage() {
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input disabled={isEmpty} placeholder="Search resumes..." className="pl-10" />
+          <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} disabled={isEmpty} placeholder="Search resumes..." className="pl-10" />
         </div>
-        <Tabs defaultValue="all" className="w-auto">
+        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value)} className="w-auto">
           <TabsList>
-            <TabsTrigger disabled={isEmpty} value="all">All</TabsTrigger>
-            <TabsTrigger disabled={isEmpty} value="analyzed">Analyzed</TabsTrigger>
-            <TabsTrigger disabled={isEmpty} value="processing">Processing</TabsTrigger>
+            <TabsTrigger value={RESUME_STATUS.ALL}>{RESUME_STATUS_LABELS[RESUME_STATUS.ALL]}</TabsTrigger>
+            <TabsTrigger value={RESUME_STATUS.ANALYZED}>{RESUME_STATUS_LABELS[RESUME_STATUS.ANALYZED]}</TabsTrigger>
+            <TabsTrigger value={RESUME_STATUS.PROCESSING}>{RESUME_STATUS_LABELS[RESUME_STATUS.PROCESSING]}</TabsTrigger>
+            <TabsTrigger value={RESUME_STATUS.FAILED}>{RESUME_STATUS_LABELS[RESUME_STATUS.FAILED]}</TabsTrigger>
+            <TabsTrigger value={RESUME_STATUS.PROCESSED}>{RESUME_STATUS_LABELS[RESUME_STATUS.PROCESSED]}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -193,7 +196,9 @@ export default function ResumesPage() {
             </CardContent>
           </Card>
         ))}
-        {pagination && totalPages > 1 &&  (
+      </div>
+
+      {pagination && resumes.length > 0 && (
         <div className="flex items-center justify-between pt-2">
           <p className="text-sm text-muted-foreground">
             Page {pagination.page} of {totalPages} &mdash; {pagination.total} total
@@ -237,7 +242,6 @@ export default function ResumesPage() {
           </div>
         </div>
       )}
-      </div>
 
       {/* Empty State for when no resumes */}
       {isEmpty && (

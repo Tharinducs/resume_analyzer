@@ -13,4 +13,26 @@ type Resume = {
 
 type ResumeTypeForList = Pick<Resume, "_id" | "title" | "updatedAt" | "score" | "status" | "fileType" | "size">;
 
-export type { Resume, ResumeTypeForList };
+type Pagination = {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+type ResumeListResponse = {
+  resumes: ResumeTypeForList[];
+  pagination: Pagination;
+};
+
+type ResumeListParams = {
+  userId: string;
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}
+
+export type { Resume, ResumeTypeForList, Pagination, ResumeListResponse, ResumeListParams };

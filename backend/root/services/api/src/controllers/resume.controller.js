@@ -48,10 +48,14 @@ export const handleResumeUpload = async (req, res) => {
 
 export const getResumesListByUser = async (req, res) => {
   const userId = get(req, "params.userId")
+  const page = Number.parseInt(get(req, "query.page", "1"), 10);
+  const limit = Number.parseInt(get(req, "query.limit", "10"), 10);
+  const status = get(req, "query.status", "all");
+  const search = get(req, "query.search", "");
 
   try {
-    const resumesList = await getResumesListByUserId(userId)
-    res.status(200).json({ code: API_CODES.RESUME.FETCH_SUC ,message: "Resumes fetched successfully", resumes: resumesList });
+    const resmesList = await getResumesListByUserId(userId, page, limit, status, search)
+    res.status(200).json({ code: API_CODES.RESUME.FETCH_SUC ,message: "Resumes fetched successfully", ...resmesList });
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: API_CODES.RESUME.FETCH_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.FETCH_FAILED]});

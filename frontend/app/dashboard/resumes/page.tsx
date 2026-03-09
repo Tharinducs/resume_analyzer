@@ -18,13 +18,16 @@ import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 import { DropdownMenu, DropdownMenuPortal, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import useDebounce from "@/hooks/use-debounce"
 import { PAGE_SIZE } from "@/constants/apiCodes"
-import { RESUME_STATUS, RESUME_STATUS_LABELS } from "@/constants/resume"
+import { ACTION_ITEMS, RESUME_STATUS, RESUME_STATUS_LABELS } from "@/constants/resume"
+import { useRouter } from "next/navigation"
+
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const userId = get(user, "_id", "");
+  const router = useRouter();
 
   const debouncedSearchItem = useDebounce(searchTerm, 500);
 
@@ -74,6 +77,25 @@ export default function ResumesPage() {
         return <Badge variant="destructive">{RESUME_STATUS_LABELS[RESUME_STATUS.FAILED]}</Badge>
       default:
         return <Badge variant="outline">Draft</Badge>
+    }
+  }
+
+  const onActionItem = (resumeId: string, action: string) => {
+    switch (action) {
+      case ACTION_ITEMS.VIEW:
+        if (resumeId) {
+          router.push(`/dashboard/resumes/upload/?resumeId=${resumeId}`);
+        }
+        // Navigate to the resume details page or show a modal
+        break;
+      case ACTION_ITEMS.DOWNLOAD:
+        // Trigger the download of the resume file
+        break;
+      case ACTION_ITEMS.DELETE:
+        // Show a confirmation dialog and delete the resume if confirmed
+        break;
+      default:
+        break;
     }
   }
 
@@ -143,15 +165,15 @@ export default function ResumesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD)}>
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DELETE)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
@@ -182,7 +204,7 @@ export default function ResumesPage() {
               </div>
 
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                <Button onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)} variant="outline" size="sm" className="flex-1 bg-transparent">
                   <Eye className="mr-2 h-3 w-3" />
                   View
                 </Button>

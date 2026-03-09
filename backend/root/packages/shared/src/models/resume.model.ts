@@ -1,5 +1,4 @@
 import { db } from "@ra/config";
-import { size } from "lodash";
 
 const resumeSchema = new db.Schema({
   userId: { type: db.Schema.Types.ObjectId, ref: "User", required: true },
@@ -54,7 +53,7 @@ const resumeSchema = new db.Schema({
   }
 });
 
-resumeSchema.index({"title": "text", "extractedData.personalInfo.name": "text", "extractedData.workExperience.company": "text" });
+resumeSchema.index({"title": "text" });
 
 const Resume = db.model("Resume", resumeSchema);
 

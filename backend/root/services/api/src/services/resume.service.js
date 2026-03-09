@@ -1,4 +1,4 @@
-import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES } from "@ra/shared";
+import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES,getResumeById } from "@ra/shared";
 
 export const getResumesListByUserId = async (userId, page, limit, status, search) => {
     const skip = (page - 1) * limit;
@@ -40,6 +40,32 @@ export const saveResumeWithJobId = async ({ userId, title, fileUrl, jobId, size,
         return savedResume;
     } catch (err) {
         console.error("Error saving resume with job ID:", err);
+        throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
+    }
+}
+
+export const getResumeDataById = async (resumeId) => {
+    try {
+        const resume = await getResumeById(resumeId);
+        return resume;
+    } catch (err) {
+        console.error("Error fetching resume by ID:", err);
+        throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
+    }
+}
+
+export const deleteResumeUsingId = async (resumeId) => {
+    try {
+        const resume = await getResumeById(resumeId);
+        if(!resume) {
+            throw new AppError(API_CODES.RESUME.FETCH_FAILED, "Resume not found", 404)
+        }
+        await resume.remove();
+    } catch (err) {
+        console.error("Error deleting resume by ID:", err);
+        if(err instanceof AppError) {
+            throw err;
+        }
         throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
     }
 }

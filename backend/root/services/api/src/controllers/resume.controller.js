@@ -3,7 +3,7 @@ import * as crypto from 'node:crypto';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
 import { get, API_CODES, ERROR_MESSAGES, MIME_TO_FILE_TYPE } from '@ra/shared';
 import { publishToQueue } from '../utils/publish.js';
-import { saveResumeWithJobId, getResumesListByUserId } from '../services/resume.service.js';
+import { saveResumeWithJobId, getResumesListByUserId, getResumeDataById, deleteResumeUsingId } from '../services/resume.service.js';
 import { formatFileSize } from '../utils/utility.js';
 
 const upload = multer({ dest: RESUME_UPLOAD_PATH });
@@ -59,5 +59,48 @@ export const getResumesListByUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: API_CODES.RESUME.FETCH_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.FETCH_FAILED]});
+  }
+}
+
+export const getResumeByResumeId = async (req, res) => {
+  const resumeId = get(req, "params.resumeId")
+
+  try {
+    const resumeData = await getResumeDataById(resumeId)
+    res.status(200).json({ code: API_CODES.RESUME.FETCH_SUC ,message: "Resume data fetched successfully", resume: resumeData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: API_CODES.RESUME.FETCH_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.FETCH_FAILED]});
+  }
+}
+
+export const downloadResumeFile = async (req, res) => {
+  const resumeId = get(req, "params.resumeId")
+
+  try {
+    const resumeData = await getResumeDataById(resumeId)
+    if(!resumeData || !resumeData.fileUrl) {
+      return res.status(404).json({ code: API_CODES.RESUME.FETCH_FAILED,message: "Resume file not found"});
+    }
+    res.download(resumeData.fileUrl, `${resumeData.title}.${resumeData.fileType}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: API_CODES.RESUME.FETCH_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.FETCH_FAILED]});
+  }
+}
+
+export const deleteResume = async (req, res) => {
+  const resumeId = get(req, "params.resumeId")
+
+  try {    
+    const resumeData = await getResumeDataById(resumeId)
+    if(!resumeData) {
+      return res.status(404).json({ code: API_CODES.RESUME.FETCH_FAILED,message: "Resume not found"});
+    }
+    await deleteResumeUsingId(resumeId)
+    res.status(200).json({ code: API_CODES.RESUME.DELETE_SUC,message: "Resume deleted successfully"});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: API_CODES.RESUME.DELETE_FAILED,message: ERROR_MESSAGES[API_CODES.RESUME.DELETE_FAILED]});
   }
 }

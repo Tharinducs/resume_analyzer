@@ -36,8 +36,21 @@ export const resumeApi = createApi({
             }),
             providesTags: ["Resumes"],
         }),
-
+        getResumeById: builder.query({
+            query: (resumeId) => ({
+                url: `/resume/${resumeId}`,
+                method: 'GET',
+            }),
+             providesTags: ["Resumes"],
+        }),
+        deleteResumeById: builder.mutation({
+            query: (resumeId) => ({
+                url: `/resume/delete/${resumeId}`,
+                method: 'DELETE',
+            }),
+             invalidatesTags: ["Resumes"],
+        })
     })
 })
 
-export const { useUploadFileMutation, useGetResumesListByUserQuery } = resumeApi;
+export const { useUploadFileMutation, useGetResumesListByUserQuery, useGetResumeByIdQuery, useDeleteResumeByIdMutation } = resumeApi;

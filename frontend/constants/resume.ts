@@ -14,4 +14,10 @@ const RESUME_STATUS_LABELS = {
   [RESUME_STATUS.FAILED]: "Failed"
 }
 
-export { RESUME_STATUS, RESUME_STATUS_LABELS }
+const ACTION_ITEMS = {
+  DOWNLOAD: "download",
+  DELETE: "delete",
+  VIEW: "view"
+}
+
+export { RESUME_STATUS, RESUME_STATUS_LABELS, ACTION_ITEMS }

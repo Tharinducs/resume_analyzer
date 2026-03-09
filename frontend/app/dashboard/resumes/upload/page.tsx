@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, FileText, Zap, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { useUploadFileMutation } from "@/features/resume/apiSlice"
+import { useGetResumeByIdQuery, useUploadFileMutation } from "@/features/resume/apiSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import { get, isEmpty } from "lodash"
 import FileUploadForm from "./file-upload-form"
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription } from "@/components/ui/alert-dialog"
 import { API_CODES } from "@/constants/apiCodes"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 import { useToast } from "@/hooks/use-toast"
 
@@ -73,19 +73,42 @@ export default function ResumeUploadPage() {
   const [uploadFileApi, { isLoading, isError }] = useUploadFileMutation()
   const { auth: { user }, loader: { loading } } = useSelector((state: RootState) => state);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumeIdFromQuery = searchParams.get("resumeId");
   const dispatch = useDispatch();
   const { toast } = useToast();
+  const { data: resumeDataFromQuery, isLoading: isResumeDataLoading } = useGetResumeByIdQuery(resumeIdFromQuery!, {
+    skip: !resumeIdFromQuery,
+    refetchOnReconnect: false,
+  })
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading ) {
       setUploadStep("processing");
     }
+    if(isResumeDataLoading){
+      dispatch(showLoader());
+    }
     return () => {
-      if (!loading) {
+      if (!loading && !isResumeDataLoading) {
         dispatch(hideLoader());
       }
     }
-  }, [isLoading, isError])
+  }, [isLoading, isError, isResumeDataLoading])
+
+  useEffect(() => {
+    if (resumeDataFromQuery) {
+      console.log("Fetched resume data for editing:", resumeDataFromQuery);
+      const extractedData = get(resumeDataFromQuery, "resume.extractedData", {});
+      console.log("Extracted data from query:", extractedData);
+      if (extractedData) {
+        setResumeData(extractedData);
+      }
+      // setResumeData(resumeDataFromQuery);
+      setUploadStep("editing");
+    }
+  }, [resumeDataFromQuery])
+  
 
   const handleFileUpload = async () => {
     setUploadProgress(100);

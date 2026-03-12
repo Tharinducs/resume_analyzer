@@ -19,3 +19,8 @@ export const MIME_TO_FILE_TYPE = {
     [MIME_TYPES.DOC]: FILE_TYPE.DOC,
     [MIME_TYPES.DOCX]: FILE_TYPE.DOC,
 }
+
+export const FILE_TYPE_TO_MIME = {
+    [FILE_TYPE.PDF]: MIME_TYPES.PDF,
+    [FILE_TYPE.DOC]: MIME_TYPES.DOCX, // Default to DOCX for DOC type
+}

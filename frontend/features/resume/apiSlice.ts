@@ -49,8 +49,15 @@ export const resumeApi = createApi({
                 method: 'DELETE',
             }),
              invalidatesTags: ["Resumes"],
-        })
+        }),
+        downloadResumeById: builder.query({
+            query: (resumeId) => ({
+                url: `/resume/download/${resumeId}`,
+                method: 'GET',
+                responseHandler: (response) => response.blob(),
+            }),
+        }),
     })
 })
 
-export const { useUploadFileMutation, useGetResumesListByUserQuery, useGetResumeByIdQuery, useDeleteResumeByIdMutation } = resumeApi;
+export const { useUploadFileMutation, useGetResumesListByUserQuery, useGetResumeByIdQuery, useDeleteResumeByIdMutation, useLazyDownloadResumeByIdQuery } = resumeApi;

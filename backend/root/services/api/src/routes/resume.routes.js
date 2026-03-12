@@ -9,5 +9,6 @@ router.get(RESUME_ROUTES.LIST_BY_USER, getResumesListByUser);
 router.get(RESUME_ROUTES.DOWNLOAD, downloadResumeFile);
 router.get(RESUME_ROUTES.GET_BY_ID, getResumeByResumeId);
 router.delete(RESUME_ROUTES.DELETE, deleteResume);
+router.get(RESUME_ROUTES.DOWNLOAD, downloadResumeFile)
 
 export default router;

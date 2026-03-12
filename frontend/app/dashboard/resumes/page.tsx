@@ -8,7 +8,7 @@ import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download,
 import Link from "next/link"
 import { RootState } from "@/store/store"
 import { useDispatch, useSelector } from "react-redux"
-import { useGetResumesListByUserQuery } from "@/features/resume/apiSlice"
+import { useGetResumesListByUserQuery, useLazyDownloadResumeByIdQuery } from "@/features/resume/apiSlice"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
@@ -39,6 +39,8 @@ export default function ResumesPage() {
     search: debouncedSearchItem
   }, { skip: !userId });
 
+  const [downloadResume, { isLoading: isDownloadLoading, isError: isDownloadError, error: downloadError }] = useLazyDownloadResumeByIdQuery()
+
   const resumes = get(data, "resumes", []);
   const pagination = get(data, "pagination", null)
   const totalPages = get(pagination, "totalPages", 1)
@@ -52,12 +54,12 @@ export default function ResumesPage() {
   }, [isError]);
 
   useEffect(() => {
-    if (isLoading || isFetching) {
+    if (isLoading || isFetching || isDownloadLoading) {
       dispatch(showLoader());
     } else {
       dispatch(hideLoader());
     }
-  }, [isLoading, isFetching]);
+  }, [isLoading, isFetching, isDownloadLoading]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-500"
@@ -80,7 +82,23 @@ export default function ResumesPage() {
     }
   }
 
-  const onActionItem = (resumeId: string, action: string) => {
+  const handleDownload = async (resumeId: string, originalName: string) => {
+    try {
+      const blob = await downloadResume(resumeId).unwrap()
+
+      const url = globalThis.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = originalName
+      link.click()
+
+      globalThis.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download failed:', err)
+    }
+  }
+
+  const onActionItem = async (resumeId: string, action: string,title: string= "Testing") => {
     switch (action) {
       case ACTION_ITEMS.VIEW:
         if (resumeId) {
@@ -90,6 +108,7 @@ export default function ResumesPage() {
         break;
       case ACTION_ITEMS.DOWNLOAD:
         // Trigger the download of the resume file
+          handleDownload(resumeId, title);
         break;
       case ACTION_ITEMS.DELETE:
         // Show a confirmation dialog and delete the resume if confirmed
@@ -169,7 +188,7 @@ export default function ResumesPage() {
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD)}>
+                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD,get(resume, 'title'))}>
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>

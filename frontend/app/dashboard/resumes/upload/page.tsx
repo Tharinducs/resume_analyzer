@@ -89,22 +89,17 @@ export default function ResumeUploadPage() {
     if(isResumeDataLoading){
       dispatch(showLoader());
     }
-    return () => {
-      if (!loading && !isResumeDataLoading) {
+    if (!isResumeDataLoading) {
         dispatch(hideLoader());
-      }
     }
-  }, [isLoading, isError, isResumeDataLoading])
+  }, [isLoading, isResumeDataLoading])
 
   useEffect(() => {
     if (resumeDataFromQuery) {
-      console.log("Fetched resume data for editing:", resumeDataFromQuery);
       const extractedData = get(resumeDataFromQuery, "resume.extractedData", {});
-      console.log("Extracted data from query:", extractedData);
       if (extractedData) {
         setResumeData(extractedData);
       }
-      // setResumeData(resumeDataFromQuery);
       setUploadStep("editing");
     }
   }, [resumeDataFromQuery])

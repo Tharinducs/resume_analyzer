@@ -101,12 +101,7 @@ export const downloadResumeFile = async (req, res) => {
 
 export const deleteResume = async (req, res) => {
   const resumeId = get(req, "params.resumeId")
-
   try {
-    const resumeData = await getResumeDataById(resumeId)
-    if (!resumeData) {
-      return res.status(404).json({ code: API_CODES.RESUME.FETCH_FAILED, message: "Resume not found" });
-    }
     await deleteResumeUsingId(resumeId)
     res.status(200).json({ code: API_CODES.RESUME.DELETE_SUC, message: "Resume deleted successfully" });
   } catch (err) {

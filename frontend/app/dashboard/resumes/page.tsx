@@ -8,7 +8,7 @@ import { Upload, Search, MoreVertical, FileText, Calendar, TrendingUp, Download,
 import Link from "next/link"
 import { RootState } from "@/store/store"
 import { useDispatch, useSelector } from "react-redux"
-import { useGetResumesListByUserQuery, useLazyDownloadResumeByIdQuery } from "@/features/resume/apiSlice"
+import { useDeleteResumeByIdMutation, useGetResumesListByUserQuery, useLazyDownloadResumeByIdQuery } from "@/features/resume/apiSlice"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
@@ -40,6 +40,7 @@ export default function ResumesPage() {
   }, { skip: !userId });
 
   const [downloadResume, { isLoading: isDownloadLoading, isError: isDownloadError, error: downloadError }] = useLazyDownloadResumeByIdQuery()
+  const [deleteResume,{isLoading:isDeleteLoading}] = useDeleteResumeByIdMutation()
 
   const resumes = get(data, "resumes", []);
   const pagination = get(data, "pagination", null)
@@ -54,7 +55,7 @@ export default function ResumesPage() {
   }, [isError]);
 
   useEffect(() => {
-    if (isLoading || isFetching || isDownloadLoading) {
+    if (isLoading || isFetching || isDownloadLoading || isDeleteLoading) {
       dispatch(showLoader());
     } else {
       dispatch(hideLoader());
@@ -111,6 +112,7 @@ export default function ResumesPage() {
           handleDownload(resumeId, title);
         break;
       case ACTION_ITEMS.DELETE:
+        deleteResume(resumeId)
         // Show a confirmation dialog and delete the resume if confirmed
         break;
       default:

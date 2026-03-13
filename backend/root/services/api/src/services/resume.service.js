@@ -1,4 +1,5 @@
-import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES,getResumeById } from "@ra/shared";
+import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES, getResumeById, deleteResumeById } from "@ra/shared";
+import fs from 'node:fs'
 
 export const getResumesListByUserId = async (userId, page, limit, status, search) => {
     const skip = (page - 1) * limit;
@@ -56,14 +57,18 @@ export const getResumeDataById = async (resumeId) => {
 
 export const deleteResumeUsingId = async (resumeId) => {
     try {
-        const resume = await getResumeById(resumeId);
-        if(!resume) {
-            throw new AppError(API_CODES.RESUME.FETCH_FAILED, "Resume not found", 404)
+        const resumeData = await getResumeById(resumeId)
+        if (!resumeData) {
+            return res.status(404).json({ code: API_CODES.RESUME.FETCH_FAILED, message: "Resume not found" });
         }
-        await resume.remove();
+        const filePath = resumeData.fileUrl;
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath)
+        }
+        await deleteResumeById(resumeId)
     } catch (err) {
         console.error("Error deleting resume by ID:", err);
-        if(err instanceof AppError) {
+        if (err instanceof AppError) {
             throw err;
         }
         throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)

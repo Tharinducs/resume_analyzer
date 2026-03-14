@@ -3,7 +3,7 @@ import * as crypto from 'node:crypto';
 import { RESUME_UPLOAD_PATH } from '../constants/common.js';
 import { get, API_CODES, ERROR_MESSAGES, MIME_TO_FILE_TYPE, FILE_TYPE_TO_MIME } from '@ra/shared';
 import { publishToQueue } from '../utils/publish.js';
-import { saveResumeWithJobId, getResumesListByUserId, getResumeDataById, deleteResumeUsingId } from '../services/resume.service.js';
+import { saveResumeWithJobId, getResumesListByUserId, getResumeDataById, deleteResumeUsingId, updateResumeWithUpdatedExtractedData } from '../services/resume.service.js';
 import { formatFileSize } from '../utils/utility.js';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -84,7 +84,7 @@ export const downloadResumeFile = async (req, res) => {
     if (!resumeData || !resumeData.fileUrl) {
       return res.status(404).json({ code: API_CODES.RESUME.FETCH_FAILED, message: "Resume file not found" });
     }
-    const filePath =  resumeData.fileUrl;
+    const filePath = resumeData.fileUrl;
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: 'File not found' })
@@ -107,5 +107,17 @@ export const deleteResume = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: API_CODES.RESUME.DELETE_FAILED, message: ERROR_MESSAGES[API_CODES.RESUME.DELETE_FAILED] });
+  }
+}
+
+export const updateResumeData = async (req, res) => {
+  const resumeId = get(req, "body.resumeId")
+  const resumeData = get(req, "body.resumeData")
+  try {
+    const updatedResumeData = await updateResumeWithUpdatedExtractedData(resumeId, resumeData)
+    res.status(200).json({ code: API_CODES.RESUME.DELETE_SUC, resume: updatedResumeData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: API_CODES.GEN.TECHNICAL_ERR, message: ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR] });
   }
 }

@@ -6,7 +6,7 @@ type Resume = {
   status: "analyzed" | "processing" | "error";
   fileType: string;
   size: string;
-  extractedData?: any; // This can be further typed based on the structure of the extracted data
+  extractedData?: ExtractedInfo; // This can be further typed based on the structure of the extracted data
   fileUrl?: string; // URL to access the uploaded resume file
   createdAt?: string; // Timestamp of when the resume was uploaded
 };
@@ -22,6 +22,35 @@ type Pagination = {
   hasPrev: boolean;
 }
 
+type  ExtractedInfo = {
+  personalInfo: {
+    name: string
+    email: string
+    phone: string
+    location: string
+    summary: string
+  }
+  workExperience: Array<{
+    _uiId?: string
+    _id?: string
+    position: string
+    company: string
+    location: string
+    startDate: string
+    endDate: string
+    description: string
+  }>
+  education: Array<{
+    _uiId?: string
+    _id?: string
+    degree: string
+    school: string
+    location: string
+    graduationDate: string
+  }>
+  skills: string[]
+}
+
 type ResumeListResponse = {
   resumes: ResumeTypeForList[];
   pagination: Pagination;
@@ -35,4 +64,4 @@ type ResumeListParams = {
   search?: string;
 }
 
-export type { Resume, ResumeTypeForList, Pagination, ResumeListResponse, ResumeListParams };
+export type { Resume, ResumeTypeForList, Pagination, ResumeListResponse, ResumeListParams, ExtractedInfo };

@@ -20,6 +20,7 @@ import useDebounce from "@/hooks/use-debounce"
 import { PAGE_SIZE } from "@/constants/apiCodes"
 import { ACTION_ITEMS, RESUME_STATUS, RESUME_STATUS_LABELS } from "@/constants/resume"
 import { useRouter } from "next/navigation"
+import { getScoreColor,isActionButtonDisabled } from "@/utils/resume.utils"
 
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -40,7 +41,7 @@ export default function ResumesPage() {
   }, { skip: !userId });
 
   const [downloadResume, { isLoading: isDownloadLoading, isError: isDownloadError, error: downloadError }] = useLazyDownloadResumeByIdQuery()
-  const [deleteResume,{isLoading:isDeleteLoading}] = useDeleteResumeByIdMutation()
+  const [deleteResume, { isLoading: isDeleteLoading }] = useDeleteResumeByIdMutation()
 
   const resumes = get(data, "resumes", []);
   const pagination = get(data, "pagination", null)
@@ -61,12 +62,6 @@ export default function ResumesPage() {
       dispatch(hideLoader());
     }
   }, [isLoading, isFetching, isDownloadLoading]);
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-500"
-    if (score >= 60) return "text-yellow-500"
-    return "text-red-500"
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -99,7 +94,7 @@ export default function ResumesPage() {
     }
   }
 
-  const onActionItem = async (resumeId: string, action: string,title: string= "Testing") => {
+  const onActionItem = async (resumeId: string, action: string, title: string = "Testing") => {
     switch (action) {
       case ACTION_ITEMS.VIEW:
         if (resumeId) {
@@ -109,7 +104,7 @@ export default function ResumesPage() {
         break;
       case ACTION_ITEMS.DOWNLOAD:
         // Trigger the download of the resume file
-          handleDownload(resumeId, title);
+        handleDownload(resumeId, title);
         break;
       case ACTION_ITEMS.DELETE:
         deleteResume(resumeId)
@@ -186,15 +181,15 @@ export default function ResumesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)}>
+                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.VIEW,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD,get(resume, 'title'))}>
+                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DOWNLOAD,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD, get(resume, 'title'))}>
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onActionItem(resume._id, ACTION_ITEMS.DELETE)} className="text-destructive">
+                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DELETE ,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DELETE)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
@@ -225,7 +220,7 @@ export default function ResumesPage() {
               </div>
 
               <div className="flex space-x-2">
-                <Button onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)} variant="outline" size="sm" className="flex-1 bg-transparent">
+                <Button disabled={isActionButtonDisabled(ACTION_ITEMS.VIEW,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)} variant="outline" size="sm" className="flex-1 bg-transparent">
                   <Eye className="mr-2 h-3 w-3" />
                   View
                 </Button>

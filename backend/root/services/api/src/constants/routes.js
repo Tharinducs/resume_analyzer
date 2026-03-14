@@ -22,5 +22,6 @@ export const RESUME_ROUTES = {
   LIST_BY_USER: `/list/:userId`,
   DELETE: `/delete/:resumeId`,
   DOWNLOAD: `/download/:resumeId`,
-  GET_BY_ID: `/:resumeId`
+  GET_BY_ID: `/:resumeId`,
+  UPDATE_RESUME: `/update/:resumeId`
 };

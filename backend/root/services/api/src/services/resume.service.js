@@ -1,4 +1,4 @@
-import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES, getResumeById, deleteResumeById } from "@ra/shared";
+import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES, getResumeById, deleteResumeById, updateResume } from "@ra/shared";
 import fs from 'node:fs'
 
 export const getResumesListByUserId = async (userId, page, limit, status, search) => {
@@ -45,6 +45,8 @@ export const saveResumeWithJobId = async ({ userId, title, fileUrl, jobId, size,
     }
 }
 
+
+
 export const getResumeDataById = async (resumeId) => {
     try {
         const resume = await getResumeById(resumeId);
@@ -71,6 +73,19 @@ export const deleteResumeUsingId = async (resumeId) => {
         if (err instanceof AppError) {
             throw err;
         }
+        throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
+    }
+}
+
+export const updateResumeWithUpdatedExtractedData = async (resumeId, resumeData) => {
+    try {
+        const updatedData = await updateResume(resumeId, {
+            ...resumeData,
+            updatedAt: moment().toISOString(),
+        });
+        return updatedData;
+    } catch (err) {
+        console.error("Error updating resume by ID:", err);
         throw new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 503)
     }
 }

@@ -9,77 +9,82 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Plus, X, Edit3, Save, User, Briefcase, GraduationCap, Award } from "lucide-react"
+import { ExtractedInfo } from "@/types/resume"
+import { v4 as uuidv4 } from 'uuid'
 
-interface ResumeData {
-  personalInfo: {
-    name: string
-    email: string
-    phone: string
-    location: string
-    summary: string
-  }
-  workExperience: Array<{
-    id: string
-    position: string
-    company: string
-    location: string
-    startDate: string
-    endDate: string
-    description: string
-  }>
-  education: Array<{
-    id: string
-    degree: string
-    school: string
-    location: string
-    graduationDate: string
-  }>
-  skills: string[]
-}
 
 interface ResumeEditorProps {
-  initialData: ResumeData
-  onSave: (data: ResumeData) => void
+  initialData: ExtractedInfo
+  onSave: (data: ExtractedInfo) => void
   isEditable?: boolean
 }
 
+const normalizeData = (data: ExtractedInfo) => ({
+  ...data,
+  workExperience: data.workExperience.map((exp, i) => ({
+    ...exp,
+    _uiId: exp._id || uuidv4(),
+  })),
+  education: data.education.map((edu, i) => ({
+    ...edu,
+    _uiId: edu._id || uuidv4(),
+  })),
+})
+
+
+const stripUIIds = (data: ExtractedInfo): ExtractedInfo => ({
+  ...data,
+  workExperience: data.workExperience.map(({ _uiId, ...rest }) => rest),
+  education: data.education.map(({ _uiId, ...rest }) => rest),
+})
+
 export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeEditorProps) {
-  const [data, setData] = useState<ResumeData>(initialData)
+  const [data, setData] = useState(() => normalizeData(initialData))
   const [isEditing, setIsEditing] = useState(false)
   const [newSkill, setNewSkill] = useState("")
 
+  // ─── Save ────────────────────────────────────────────────────────────────
   const handleSave = () => {
-    onSave(data)
+    onSave(stripUIIds(data)) 
     setIsEditing(false)
   }
 
+  const handleCancel = () => {
+    setData(normalizeData(initialData))
+    setIsEditing(false)
+  }
+
+  // ─── Work Experience ─────────────────────────────────────────────────────
   const addExperience = () => {
     const newExp = {
-      id: Date.now().toString(),
-      title: "",
+      _uiId: uuidv4(),
+      position: "",
       company: "",
       location: "",
       startDate: "",
       endDate: "",
       description: "",
     }
-    //setData({ ...data, experience: [...data.experience, newExp] })
+    setData({ ...data, workExperience: [...data.workExperience, newExp] })
   }
 
-  const removeExperience = (id: string) => {
-    //setData({ ...data, experience: data.experience.filter((exp) => exp.id !== id) })
+  const removeExperience = (_uiId: string) => {
+    setData({ ...data, workExperience: data.workExperience.filter((exp) => exp._uiId !== _uiId) })
   }
 
-  const updateExperience = (id: string, field: string, value: string) => {
-    // setData({
-    //   ...data,
-    //   experience: data.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
-    // })
+  const updateExperience = (_uiId: string, field: string, value: string) => {
+    setData({
+      ...data,
+      workExperience: data.workExperience.map((exp) =>
+        exp._uiId === _uiId ? { ...exp, [field]: value } : exp
+      ),
+    })
   }
 
+  // ─── Education ───────────────────────────────────────────────────────────
   const addEducation = () => {
     const newEdu = {
-      id: Date.now().toString(),
+      _uiId: uuidv4(),
       degree: "",
       school: "",
       location: "",
@@ -88,17 +93,20 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
     setData({ ...data, education: [...data.education, newEdu] })
   }
 
-  const removeEducation = (id: string) => {
-    setData({ ...data, education: data.education.filter((edu) => edu.id !== id) })
+  const removeEducation = (_uiId: string) => {
+    setData({ ...data, education: data.education.filter((edu) => edu._uiId !== _uiId) })
   }
 
-  const updateEducation = (id: string, field: string, value: string) => {
+  const updateEducation = (_uiId: string, field: string, value: string) => {
     setData({
       ...data,
-      education: data.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
+      education: data.education.map((edu) =>
+        edu._uiId === _uiId ? { ...edu, [field]: value } : edu
+      ),
     })
   }
 
+  // ─── Skills ──────────────────────────────────────────────────────────────
   const addSkill = () => {
     if (newSkill.trim() && !data.skills.includes(newSkill.trim())) {
       setData({ ...data, skills: [...data.skills, newSkill.trim()] })
@@ -122,7 +130,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           <div className="flex space-x-2">
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
                 <Button onClick={handleSave}>
@@ -140,7 +148,6 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
         )}
       </div>
 
-      {/* Personal Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -155,7 +162,9 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
               <Input
                 id="name"
                 value={data.personalInfo.name}
-                onChange={(e) => setData({ ...data, personalInfo: { ...data.personalInfo, name: e.target.value } })}
+                onChange={(e) =>
+                  setData({ ...data, personalInfo: { ...data.personalInfo, name: e.target.value } })
+                }
                 disabled={!isEditing}
               />
             </div>
@@ -165,7 +174,9 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                 id="email"
                 type="email"
                 value={data.personalInfo.email}
-                onChange={(e) => setData({ ...data, personalInfo: { ...data.personalInfo, email: e.target.value } })}
+                onChange={(e) =>
+                  setData({ ...data, personalInfo: { ...data.personalInfo, email: e.target.value } })
+                }
                 disabled={!isEditing}
               />
             </div>
@@ -174,7 +185,9 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
               <Input
                 id="phone"
                 value={data.personalInfo.phone}
-                onChange={(e) => setData({ ...data, personalInfo: { ...data.personalInfo, phone: e.target.value } })}
+                onChange={(e) =>
+                  setData({ ...data, personalInfo: { ...data.personalInfo, phone: e.target.value } })
+                }
                 disabled={!isEditing}
               />
             </div>
@@ -183,7 +196,9 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
               <Input
                 id="location"
                 value={data.personalInfo.location}
-                onChange={(e) => setData({ ...data, personalInfo: { ...data.personalInfo, location: e.target.value } })}
+                onChange={(e) =>
+                  setData({ ...data, personalInfo: { ...data.personalInfo, location: e.target.value } })
+                }
                 disabled={!isEditing}
               />
             </div>
@@ -194,14 +209,15 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
               id="summary"
               rows={4}
               value={data.personalInfo.summary}
-              onChange={(e) => setData({ ...data, personalInfo: { ...data.personalInfo, summary: e.target.value } })}
+              onChange={(e) =>
+                setData({ ...data, personalInfo: { ...data.personalInfo, summary: e.target.value } })
+              }
               disabled={!isEditing}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Work Experience */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -218,8 +234,11 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {data.workExperience.length === 0 && (
+            <p className="text-sm text-muted-foreground">No work experience added yet.</p>
+          )}
           {data.workExperience.map((exp, index) => (
-            <div key={exp.id} className="space-y-4">
+            <div key={exp._uiId} className="space-y-4">
               {index > 0 && <Separator />}
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-4">
@@ -228,7 +247,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Job Title</Label>
                       <Input
                         value={exp.position}
-                        onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
+                        onChange={(e) => updateExperience(exp._uiId, "position", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -236,7 +255,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Company</Label>
                       <Input
                         value={exp.company}
-                        onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
+                        onChange={(e) => updateExperience(exp._uiId, "company", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -244,7 +263,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Location</Label>
                       <Input
                         value={exp.location}
-                        onChange={(e) => updateExperience(exp.id, "location", e.target.value)}
+                        onChange={(e) => updateExperience(exp._uiId, "location", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -253,7 +272,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                         <Label>Start Date</Label>
                         <Input
                           value={exp.startDate}
-                          onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
+                          onChange={(e) => updateExperience(exp._uiId, "startDate", e.target.value)}
                           disabled={!isEditing}
                         />
                       </div>
@@ -261,7 +280,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                         <Label>End Date</Label>
                         <Input
                           value={exp.endDate}
-                          onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
+                          onChange={(e) => updateExperience(exp._uiId, "endDate", e.target.value)}
                           disabled={!isEditing}
                         />
                       </div>
@@ -272,13 +291,18 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                     <Textarea
                       rows={3}
                       value={exp.description}
-                      onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                      onChange={(e) => updateExperience(exp._uiId, "description", e.target.value)}
                       disabled={!isEditing}
                     />
                   </div>
                 </div>
                 {isEditing && (
-                  <Button variant="ghost" size="sm" onClick={() => removeExperience(exp.id)} className="ml-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeExperience(exp._uiId)}
+                    className="ml-2"
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
@@ -288,7 +312,6 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
         </CardContent>
       </Card>
 
-      {/* Education */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -305,8 +328,11 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {data.education.length === 0 && (
+            <p className="text-sm text-muted-foreground">No education added yet.</p>
+          )}
           {data.education.map((edu, index) => (
-            <div key={edu.id} className="space-y-4">
+            <div key={edu._uiId} className="space-y-4">
               {index > 0 && <Separator />}
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-4">
@@ -315,7 +341,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Degree</Label>
                       <Input
                         value={edu.degree}
-                        onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
+                        onChange={(e) => updateEducation(edu._uiId, "degree", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -323,7 +349,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>School</Label>
                       <Input
                         value={edu.school}
-                        onChange={(e) => updateEducation(edu.id, "school", e.target.value)}
+                        onChange={(e) => updateEducation(edu._uiId, "school", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -331,7 +357,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Location</Label>
                       <Input
                         value={edu.location}
-                        onChange={(e) => updateEducation(edu.id, "location", e.target.value)}
+                        onChange={(e) => updateEducation(edu._uiId, "location", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -339,14 +365,19 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                       <Label>Graduation Date</Label>
                       <Input
                         value={edu.graduationDate}
-                        onChange={(e) => updateEducation(edu.id, "graduationDate", e.target.value)}
+                        onChange={(e) => updateEducation(edu._uiId, "graduationDate", e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
                   </div>
                 </div>
                 {isEditing && (
-                  <Button variant="ghost" size="sm" onClick={() => removeEducation(edu.id)} className="ml-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeEducation(edu._uiId)}
+                    className="ml-2"
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
@@ -356,7 +387,6 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
         </CardContent>
       </Card>
 
-      {/* Skills */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -366,6 +396,9 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           <CardDescription>Your technical and professional skills</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {data.skills.length === 0 && (
+            <p className="text-sm text-muted-foreground">No skills added yet.</p>
+          )}
           <div className="flex flex-wrap gap-2">
             {data.skills.map((skill) => (
               <Badge key={skill} variant="secondary" className="text-sm">
@@ -389,7 +422,7 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
                 placeholder="Add a skill..."
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addSkill()}
+                onKeyDown={(e) => e.key === "Enter" && addSkill()}
               />
               <Button onClick={addSkill}>Add</Button>
             </div>

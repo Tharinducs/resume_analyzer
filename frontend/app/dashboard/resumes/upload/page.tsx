@@ -146,14 +146,14 @@ export default function ResumeUploadPage() {
   }
 
   const handleSaveResume = (data: any) => {
-    setResumeData(data)
+    // setResumeData(data)
     console.log("Resume saved:", data)
     // Here you would typically save to your backend
   }
 
   const handleAnalyzeResume = () => {
     // Navigate to analysis results
-    window.location.href = "/resumes/analysis"
+    router.push("/dashboard/resumes/analysis")
   }
 
   const redirectToResumeList = () => {

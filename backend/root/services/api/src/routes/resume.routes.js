@@ -1,6 +1,6 @@
 import express from "express";
 import { RESUME_ROUTES } from "../constants/routes.js";
-import { uploadResume, handleResumeUpload, getResumesListByUser, deleteResume, downloadResumeFile, getResumeByResumeId } from "../controllers/resume.controller.js";
+import { uploadResume, handleResumeUpload, getResumesListByUser, deleteResume, downloadResumeFile, getResumeByResumeId, updateResumeData } from "../controllers/resume.controller.js";
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get(RESUME_ROUTES.DOWNLOAD, downloadResumeFile);
 router.get(RESUME_ROUTES.GET_BY_ID, getResumeByResumeId);
 router.delete(RESUME_ROUTES.DELETE, deleteResume);
 router.get(RESUME_ROUTES.DOWNLOAD, downloadResumeFile)
+router.post(RESUME_ROUTES.UPDATE_RESUME,updateResumeData)
 
 export default router;

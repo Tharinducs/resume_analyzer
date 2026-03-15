@@ -16,7 +16,6 @@ export const RESUME_ROUTE = `${API}/resume`;
 
 export const RESUME_ROUTES = {
   UPLOAD: `/upload`,
-  ANALYZE: `/analyze/:resumeId`,
   GET_REPORT: `/report/:resumeId`,
   LIST: `/list`,
   LIST_BY_USER: `/list/:userId`,
@@ -25,3 +24,9 @@ export const RESUME_ROUTES = {
   GET_BY_ID: `/:resumeId`,
   UPDATE_RESUME: `/update/:resumeId`
 };
+
+export const ANALYSIS_ROUTE = `${API}/analyze`;
+
+export const ANALYSIS_ROUTES = {
+ANALYZE: `/:resumeId`,
+}

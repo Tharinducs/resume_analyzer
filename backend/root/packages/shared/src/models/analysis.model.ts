@@ -1,7 +1,7 @@
 import { db } from "@ra/config";
 
 const analysisSchema = new db.Schema({
-    cvId: { type: db.Schema.Types.ObjectId, ref: "Resume" },
+    resumeId: { type: db.Schema.Types.ObjectId, ref: "Resume" },
     userId: String,
     jobDescription: String,
     scores: {

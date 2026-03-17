@@ -15,4 +15,7 @@ export const ERROR_MESSAGES = {
   [API_CODES.AUTH.AUTH_HEADER_MISSING]: "Authorization header is missing.",
   [API_CODES.AUTH.INVALID_AUTH_HEADER]: "Invalid authorization header format.",
   [API_CODES.AUTH.USER_NOT_FOUND]: "User not found.",
+
+  [API_CODES.ANALYSIS.NO_EXTRACTED_DATA]:"CV not yet processed. Wait for status: 'processed'.",
+  [API_CODES.ANALYSIS.ERROR_WHILE_ANALYSING]: "Something went wrong while analysing the file",
 };

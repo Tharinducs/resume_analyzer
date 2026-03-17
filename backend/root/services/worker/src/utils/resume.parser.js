@@ -115,9 +115,7 @@ ${resumeText}
   const response = await aiProvider.generateText({prompt});
 
   try {
-    const jsonStart = response.indexOf("{");
-    const jsonEnd = response.lastIndexOf("}");
-    return JSON.parse(response.slice(jsonStart, jsonEnd + 1));
+    return JSON.parse(response);
   } catch (error) {
     console.error("Gemini parse error:", error);
     return {};

@@ -1,6 +1,7 @@
 import AIService from "../ai.service.js";
 import Groq from "groq-sdk/index.mjs";
 import { GenerateTextProps } from "../type.js";
+import { buildResponse } from "./buildResponse.js";
 
 class GroqProvider extends AIService {
   client: Groq;
@@ -16,7 +17,9 @@ class GroqProvider extends AIService {
       messages: [{ role: "user", content: prompt }],
     });
 
-    return completion.choices[0].message.content || "";
+    const result = completion.choices[0].message.content || "";
+
+    return buildResponse(result);
   }
 }
 

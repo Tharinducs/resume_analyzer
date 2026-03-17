@@ -1,6 +1,7 @@
 import AIService from "../ai.service.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GenerateTextProps } from "../type.js";
+import { buildResponse } from "./buildResponse.js";
 
 class GeminiProvider extends AIService {
   client: GoogleGenerativeAI;
@@ -14,7 +15,7 @@ class GeminiProvider extends AIService {
   async generateText({ prompt }:GenerateTextProps) {
     console.log("Generating text with GeminiProvider, prompt length:", prompt.length);
     const result = await this.model.generateContent(prompt);
-    return result.response.text();
+    return buildResponse(result);
   }
 }
 

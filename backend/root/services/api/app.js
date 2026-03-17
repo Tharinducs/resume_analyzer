@@ -9,6 +9,7 @@ import { RESUME_ROUTE, AUTH_ROUTE, ANALYSIS_ROUTE } from "./src/constants/routes
 import authRouter from "./src/routes/auth.routes.js";
 import resumeRouter from "./src/routes/resume.routes.js";
 import analysisRouter from "./src/routes/analysis.routes.js"
+import { authenticate } from "./src/midlewares/authenticate.js";
 
 const app = express();
 
@@ -33,8 +34,8 @@ app.get("/health", (req, res) => {
 });
 
 app.use(`${AUTH_ROUTE}`, authRouter); 
-app.use(`${RESUME_ROUTE}`, resumeRouter);
-app.use(`${ANALYSIS_ROUTE}`, analysisRouter)
+app.use(`${RESUME_ROUTE}`, authenticate ,resumeRouter);
+app.use(`${ANALYSIS_ROUTE}`, authenticate ,analysisRouter)
 
 app.use((req, res, next) => {
   console.log(`404 - Not Found - ${req.originalUrl}`);

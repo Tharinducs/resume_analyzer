@@ -33,7 +33,7 @@ export const loginWithProvider = async (req, res, next) => {
     }
 }
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res,next) => {
     const userData = {
         email: get(req, "body.email"),
         password: get(req, "body.password")
@@ -50,7 +50,7 @@ export const registerUser = async (req, res) => {
     }
 }
 
-export const doLogin = async (req, res) => {
+export const doLogin = async (req, res, next) => {
     const userData = {
         email: get(req, "body.email"),
         password: get(req, "body.password")

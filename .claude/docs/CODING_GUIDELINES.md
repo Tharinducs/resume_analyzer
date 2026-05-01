@@ -1,0 +1,5 @@
+- Use TypeScript everywhere in FE code API services use Javscript
+- Use async/await (no .then chains)
+- Write small reusable functions
+- Max function length: ~30 lines
+- Use meaninfull function name according to the usage

@@ -17,6 +17,7 @@ import { API_CODES } from "@/constants/apiCodes"
 import { useRouter, useSearchParams } from "next/navigation"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 import { useToast } from "@/hooks/use-toast"
+import { useAnalyzeResumeMutation } from "@/features/analysis/apiSlice"
 
 // Mock resume data that would come from parsing
 const mockResumeData = {
@@ -82,17 +83,19 @@ export default function ResumeUploadPage() {
     refetchOnReconnect: false,
   })
 
+  const [analyzeTheResume, { isLoading: analyzeLoading, isError: isAnalyzeErr }] = useAnalyzeResumeMutation()
+
   useEffect(() => {
-    if (isLoading ) {
+    if (isLoading) {
       setUploadStep("processing");
     }
-    if(isResumeDataLoading){
+    if (isResumeDataLoading || analyzeLoading) {
       dispatch(showLoader());
     }
-    if (!isResumeDataLoading) {
-        dispatch(hideLoader());
+    if (!isResumeDataLoading && !analyzeLoading) {
+      dispatch(hideLoader());
     }
-  }, [isLoading, isResumeDataLoading])
+  }, [isLoading, isResumeDataLoading, analyzeLoading])
 
   useEffect(() => {
     if (resumeDataFromQuery) {
@@ -103,7 +106,13 @@ export default function ResumeUploadPage() {
       setUploadStep("editing");
     }
   }, [resumeDataFromQuery])
-  
+
+  useEffect(() => {
+    return () => {
+      setResumeData({})
+    }
+  }, [])
+
 
   const handleFileUpload = async () => {
     setUploadProgress(100);
@@ -151,9 +160,19 @@ export default function ResumeUploadPage() {
     // Here you would typically save to your backend
   }
 
-  const handleAnalyzeResume = () => {
+  const handleAnalyzeResume = async () => {
     // Navigate to analysis results
-    router.push("/dashboard/resumes/analysis")
+    console.log(resumeDataFromQuery, "resumeData")
+    try {
+      const analysisData = await analyzeTheResume({
+        userId: get(user, "_id"),
+        resumeId: resumeIdFromQuery
+      })
+      console.log(analysisData,"setResumeDatasetResumeDatasetResumeDatasetResumeData")
+    } catch (err) {
+
+    }
+    // router.push("/dashboard/resumes/analysis")
   }
 
   const redirectToResumeList = () => {

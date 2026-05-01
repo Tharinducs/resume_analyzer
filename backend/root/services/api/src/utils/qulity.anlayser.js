@@ -108,11 +108,10 @@ export const runGeneralAnalysis = async (extractedData) => {
         { "type": "warning", "text": "<gap or issue in the CV>" }
     ]
     }`;
-
-    const response = await aiProvider.generateText({ prompt });
-    console.log(response,"response")
     try {
-        return JSON.parse(response);
+        const response = await aiProvider.generateText({ prompt });
+
+        return JSON.parse(response.json());
     } catch (error) {
         console.error("Gemini parse error:", error);
         return {};

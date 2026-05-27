@@ -9,6 +9,8 @@ import Link from "next/link"
 import { RootState } from "@/store/store"
 import { useDispatch, useSelector } from "react-redux"
 import { useDeleteResumeByIdMutation, useGetResumesListByUserQuery, useLazyDownloadResumeByIdQuery } from "@/features/resume/apiSlice"
+import { useAnalyzeResumeMutation } from "@/features/analysis/apiSlice"
+import { useToast } from "@/hooks/use-toast"
 import { get } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
@@ -42,6 +44,8 @@ export default function ResumesPage() {
 
   const [downloadResume, { isLoading: isDownloadLoading, isError: isDownloadError, error: downloadError }] = useLazyDownloadResumeByIdQuery()
   const [deleteResume, { isLoading: isDeleteLoading }] = useDeleteResumeByIdMutation()
+  const [analyzeResume, { isLoading: isAnalyzeLoading }] = useAnalyzeResumeMutation()
+  const { toast } = useToast()
 
   const resumes = get(data, "resumes", []);
   const pagination = get(data, "pagination", null)
@@ -56,12 +60,12 @@ export default function ResumesPage() {
   }, [isError]);
 
   useEffect(() => {
-    if (isLoading || isFetching || isDownloadLoading || isDeleteLoading) {
+    if (isLoading || isFetching || isDownloadLoading || isDeleteLoading || isAnalyzeLoading) {
       dispatch(showLoader());
     } else {
       dispatch(hideLoader());
     }
-  }, [isLoading, isFetching, isDownloadLoading]);
+  }, [isLoading, isFetching, isDownloadLoading, isAnalyzeLoading]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -91,6 +95,25 @@ export default function ResumesPage() {
       globalThis.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Download failed:', err)
+    }
+  }
+
+  const handleAnalyze = async (resume: ResumeTypeForList) => {
+    if (resume.analysisId) {
+      router.push(`/dashboard/resumes/analysis?resumeId=${resume._id}&analysisId=${resume.analysisId}`)
+      return
+    }
+    try {
+      const result = await analyzeResume({ resumeId: resume._id, userId }).unwrap()
+      const analysisId = get(result, "analysisId", "")
+      router.push(`/dashboard/resumes/analysis?resumeId=${resume._id}&analysisId=${analysisId}`)
+    } catch {
+      toast({
+        title: "Analysis Failed",
+        description: "An error occurred while analyzing your resume. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      })
     }
   }
 
@@ -225,9 +248,14 @@ export default function ResumesPage() {
                   View
                 </Button>
                 {resume.status === 'analyzed' && (
-                  <Button size="sm" className="flex-1">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    disabled={isAnalyzeLoading}
+                    onClick={() => handleAnalyze(resume)}
+                  >
                     <TrendingUp className="mr-2 h-3 w-3" />
-                    Analyze
+                    {resume.analysisId ? "View Analysis" : "Analyze"}
                   </Button>
                 )}
               </div>

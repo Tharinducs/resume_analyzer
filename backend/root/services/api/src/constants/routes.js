@@ -29,4 +29,5 @@ export const ANALYSIS_ROUTE = `${API}/analyze`;
 
 export const ANALYSIS_ROUTES = {
 ANALYZE: `/:resumeId`,
+GET_ANALYSIS_RESULT: `/result/:analysisId`
 }

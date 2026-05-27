@@ -24,7 +24,7 @@ export default function RootLayout({
         <Toaster />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <ThemeProvider defaultTheme="dark" storageKey="ai-resume-analyzer-theme">
+            <ThemeProvider defaultTheme="system" storageKey="ai-resume-analyzer-theme">
               <Suspense fallback={null}>{children}</Suspense>
             </ThemeProvider>
             <GlobalLoader />

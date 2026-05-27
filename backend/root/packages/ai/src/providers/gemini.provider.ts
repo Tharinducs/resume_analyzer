@@ -9,7 +9,12 @@ class GeminiProvider extends AIService {
   constructor(apiKey: string) {
     super();
     this.client = new GoogleGenerativeAI(apiKey);
-    this.model = this.client.getGenerativeModel({ model: "gemini-2.5-flash" });
+    this.model = this.client.getGenerativeModel({ 
+      model: "gemini-2.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    });
   }
 
   async generateText({ prompt }:GenerateTextProps) {

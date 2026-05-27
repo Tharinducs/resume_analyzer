@@ -14,15 +14,15 @@ export const loginWithProvider = async (req, res, next) => {
         console.log(`[GOOGLE LOGIN SUCCESS] UserID: ${user.id} Email: ${user.email} at ${new Date().toISOString()}`)
         res.cookie("token", jwt, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
@@ -65,15 +65,15 @@ export const doLogin = async (req, res, next) => {
 
         res.cookie("token", jwt, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
@@ -105,15 +105,15 @@ export const refreshToken = async (req, res, next) => {
         console.log("newTokenData:", newTokenData);
         res.cookie("token", newTokenData.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("refreshToken", newTokenData.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION,
-            sameSite: "Strict",
+            secure: true,
+            sameSite: "None",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
         const user = await getUser(get(req, "body.userId"));

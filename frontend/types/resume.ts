@@ -6,12 +6,13 @@ type Resume = {
   status: "analyzed" | "processing" | "error";
   fileType: string;
   size: string;
-  extractedData?: ExtractedInfo; // This can be further typed based on the structure of the extracted data
-  fileUrl?: string; // URL to access the uploaded resume file
-  createdAt?: string; // Timestamp of when the resume was uploaded
+  analysisId?: string;
+  extractedData?: ExtractedInfo;
+  fileUrl?: string;
+  createdAt?: string;
 };
 
-type ResumeTypeForList = Pick<Resume, "_id" | "title" | "updatedAt" | "score" | "status" | "fileType" | "size">;
+type ResumeTypeForList = Pick<Resume, "_id" | "title" | "updatedAt" | "score" | "status" | "fileType" | "size" | "analysisId">;
 
 type Pagination = {
   total: number;

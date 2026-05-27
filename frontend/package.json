@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --experimental-https --experimental-https-key ../certs/key.pem --experimental-https-cert ../certs/cert.pem --experimental-https-ca ../certs/rootCA.pem",
     "lint": "next lint",
     "start": "next start",
     "build:staging": "NODE_ENV=staging next build && next start",

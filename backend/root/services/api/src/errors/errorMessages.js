@@ -18,4 +18,6 @@ export const ERROR_MESSAGES = {
 
   [API_CODES.ANALYSIS.NO_EXTRACTED_DATA]:"CV not yet processed. Wait for status: 'processed'.",
   [API_CODES.ANALYSIS.ERROR_WHILE_ANALYSING]: "Something went wrong while analysing the file",
+  [API_CODES.ANALYSIS.ANALYSIS_NOT_FOUND]: "Analysis not found for the given ID.",
+  [API_CODES.ANALYSIS.ERROR_WHILE_FETCHING_ANALYSIS]: "Something went wrong while fetching the analysis result",
 };

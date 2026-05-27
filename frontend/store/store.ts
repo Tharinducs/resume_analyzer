@@ -5,6 +5,7 @@ import rootReducer from "./rootReducer";
 import persistConfig from "./persistConfig";
 import { authApi } from "@/features/auth/apiSlice";
 import { resumeApi } from "@/features/resume/apiSlice";
+import { analysisApi } from "@/features/analysis/apiSlice";
 
 const persistedReducer = persistReducer(persistConfig,rootReducer)
 
@@ -16,7 +17,8 @@ export const store = configureStore({
         thunk:true
     })
     .concat(authApi.middleware)
-    .concat(resumeApi.middleware),
+    .concat(resumeApi.middleware)
+    .concat(analysisApi.middleware),
 })
 
 export const persistor = persistStore(store)

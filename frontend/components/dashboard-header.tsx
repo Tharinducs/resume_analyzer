@@ -12,20 +12,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, User, Settings, LogOut } from "lucide-react"
+import { Bell, Search, User, Settings, LogOut, Menu } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useSelector } from "react-redux"
 import { get } from "lodash";
 import { RootState } from "@/store/store"
 
-export function DashboardHeader() {
+export function DashboardHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const user = useSelector((state: RootState) => state.auth.user);
   console.log("DashboardHeader user:", user);
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-full items-center justify-between px-6">
-        {/* Search */}
-        <div className="flex items-center space-x-4 flex-1 max-w-md">
+      <div className="flex h-full items-center justify-between px-4 md:px-6 gap-4">
+        {/* Hamburger – mobile only */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden shrink-0"
+          onClick={onMenuToggle}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        {/* Search – hidden on mobile */}
+        <div className="hidden md:flex items-center flex-1 min-w-0 max-w-md">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -36,7 +46,7 @@ export function DashboardHeader() {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-1 md:gap-2 ml-auto">
           <ThemeToggle />
 
           {/* Notifications */}

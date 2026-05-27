@@ -1,5 +1,6 @@
-import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES, getResumeById, deleteResumeById, updateResume } from "@ra/shared";
+import { saveResume, getResumeByUserIdWithPagination, AppError, API_CODES, ERROR_MESSAGES, getResumeById, deleteResumeById, updateResume, getAnalysesByResumeIds } from "@ra/shared";
 import fs from 'node:fs'
+import { RESUME_ANALYSIS_STATUS } from "../constants/common.js";
 
 export const getResumesListByUserId = async (userId, page, limit, status, search) => {
     const skip = (page - 1) * limit;
@@ -10,8 +11,27 @@ export const getResumesListByUserId = async (userId, page, limit, status, search
 
     try {
         const [resumes, total] = await getResumeByUserIdWithPagination(filter, skip, limit);
+
+        const analyzedResumeIds = resumes
+            .filter(r => r.status === RESUME_ANALYSIS_STATUS.ANALYZED && r.analysisId)
+            .map(r => String(r._id));
+
+        let scoreMap = {};
+        if (analyzedResumeIds.length > 0) {
+            const analyses = await getAnalysesByResumeIds(analyzedResumeIds);
+            scoreMap = Object.fromEntries(
+                analyses.map(a => [String(a.resumeId), a.scores?.overall ?? null])
+            );
+        }
+
+        const enrichedResumes = resumes.map(r =>
+            r.status === RESUME_ANALYSIS_STATUS.ANALYZED && r.analysisId
+                ? { ...r, score: scoreMap[String(r._id)] ?? null }
+                : r
+        );
+
         return {
-            resumes,
+            resumes: enrichedResumes,
             pagination: {
                 total,
                 page: page,

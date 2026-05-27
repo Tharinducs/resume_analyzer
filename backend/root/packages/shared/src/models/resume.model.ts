@@ -17,6 +17,7 @@ const resumeSchema = new db.Schema({
     feedback: String,
   },
   status: { type: String, enum: ['processing', 'analyzed', 'failed','processed'], default: 'processing' },
+  analysisId: { type: db.Schema.Types.ObjectId, ref: "Analysis", default: null },
   extractedData: {
     personalInfo: {
       name: { type: String },

@@ -161,18 +161,23 @@ export default function ResumeUploadPage() {
   }
 
   const handleAnalyzeResume = async () => {
-    // Navigate to analysis results
-    console.log(resumeDataFromQuery, "resumeData")
-    try {
+    // Navigate to analysis results page with the analysis ID returned from the API
       const analysisData = await analyzeTheResume({
         userId: get(user, "_id"),
         resumeId: resumeIdFromQuery
       })
-      console.log(analysisData,"setResumeDatasetResumeDatasetResumeDatasetResumeData")
-    } catch (err) {
-
-    }
-    // router.push("/dashboard/resumes/analysis")
+      console.log("Analysis data:", analysisData)
+      if(!isEmpty(analysisData) && !isAnalyzeErr){
+        const analysisId = get(analysisData, "data.analysisId","");
+        router.push(`/dashboard/resumes/analysis?resumeId=${resumeIdFromQuery}&analysisId=${analysisId}`)
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: "An error occurred while analyzing your resume. Please try again.",
+          duration: 5000,
+          variant: "destructive",
+        });
+      }
   }
 
   const redirectToResumeList = () => {

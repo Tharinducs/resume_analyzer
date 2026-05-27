@@ -24,13 +24,13 @@ const analysisSchema = new db.Schema({
                 {
                     id: String,
                     text: String,
-                    type: String,
+                    type: { type: String },
                     accepted: { type: Boolean, default: null },
                 },
             ],
         },
     ],
-    keyFindings: [{ type: String, text: String }],
+    keyFindings: [{ type: { type: String }, text: String }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 })

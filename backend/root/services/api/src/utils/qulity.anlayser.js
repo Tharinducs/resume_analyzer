@@ -111,7 +111,7 @@ export const runGeneralAnalysis = async (extractedData) => {
     try {
         const response = await aiProvider.generateText({ prompt });
 
-        return JSON.parse(response.json());
+        return response.json();
     } catch (error) {
         console.error("Gemini parse error:", error);
         return {};

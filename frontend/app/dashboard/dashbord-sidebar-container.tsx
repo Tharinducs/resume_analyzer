@@ -8,7 +8,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { logout as clearUserData } from "@/features/auth/authSlice";
 
-const DashboardSidebarContainer = () => {
+interface DashboardSidebarContainerProps {
+    mobileOpen?: boolean;
+    onMobileClose?: () => void;
+}
+
+const DashboardSidebarContainer = ({ mobileOpen, onMobileClose }: DashboardSidebarContainerProps) => {
     const dispatch = useDispatch();
     const [logout, { isSuccess, isLoading, isError }] = useLogoutAPIMutation();
     const {toast} = useToast();
@@ -47,7 +52,7 @@ const DashboardSidebarContainer = () => {
 
     return (
         <>
-            <Sidebar className="w-64 flex-shrink-0" handleLogout={handleLogout} />
+            <Sidebar handleLogout={handleLogout} mobileOpen={mobileOpen} onMobileClose={onMobileClose} />
         </>
     );
 };

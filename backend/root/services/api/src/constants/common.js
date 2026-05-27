@@ -23,7 +23,8 @@ export const TASK_STATUS = {
 }
 
 export const RESUME_ANALYSIS_STATUS = {
-    PROCESSING: "Processing",
-    ANALYZED: "Analyzed",
-    FAILED: "Failed"
+    PROCESSING: "processing",
+    ANALYZED: "analyzed",
+    FAILED: "failed",
+    PROCESSED: "processed"
 }

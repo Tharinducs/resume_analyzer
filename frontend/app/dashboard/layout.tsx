@@ -1,10 +1,29 @@
 "use client";
+import { useEffect } from "react";
 import { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import DashboardSidebarContainer from "@/app/dashboard/dashbord-sidebar-container";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useRouter, usePathname } from "next/navigation";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!user) {
+      // Use the browser's own location to build the redirect — avoids any
+      // mismatch between Next.js pathname and the real query string.
+      const { pathname: p, search, hash } = globalThis.location;
+      const currentUrl = p + search + hash;
+      router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+    }
+  }, [user, pathname]);
+
+  if (!user) return null;
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">

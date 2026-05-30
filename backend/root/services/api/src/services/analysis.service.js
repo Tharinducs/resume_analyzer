@@ -1,4 +1,4 @@
-import { saveAnalysis, getAnalysisByResumeId, deleteAnalysisByResumeId, getResumeById, updateResume, AppError, get, isEmpty } from "@ra/shared";
+import { saveAnalysis, getAnalysisByResumeId, deleteAnalysisByResumeId, getResumeById, updateResume, AppError, get, isEmpty, getAnalysisByAnalysisId, updateAiFeedbackByAnalysisId } from "@ra/shared";
 import { ERROR_MESSAGES } from "../errors/errorMessages.js";
 import { API_CODES } from "../constants/apiCodes.js";
 import { runGeneralAnalysis } from "../utils/qulity.anlayser.js";
@@ -37,7 +37,7 @@ export const analyseTheResumeUsingResumeId = async (resumeId,userId) => {
 
 export const getAnalysisResultUsingAnalysisId = async (analysisId) => {
     try {
-        const analysisData = await getAnalysisById(analysisId);
+        const analysisData = await getAnalysisByAnalysisId(analysisId);
         if (!analysisData) {
             throw new AppError(API_CODES.ANALYSIS.ANALYSIS_NOT_FOUND, ERROR_MESSAGES[API_CODES.ANALYSIS.ANALYSIS_NOT_FOUND], 404)
         }
@@ -45,5 +45,18 @@ export const getAnalysisResultUsingAnalysisId = async (analysisId) => {
     } catch (err){
        console.log("Error:" , err)
        throw new AppError(API_CODES.ANALYSIS.ERROR_WHILE_FETCHING_ANALYSIS, ERROR_MESSAGES[API_CODES.ANALYSIS.ERROR_WHILE_FETCHING_ANALYSIS], 503)
+    }
+}
+
+export const saveFeedbackDecisions = async (analysisId, aiFeedback) => {
+    try {
+        const updated = await updateAiFeedbackByAnalysisId(analysisId, aiFeedback);
+        if (!updated) {
+            throw new AppError(API_CODES.ANALYSIS.ANALYSIS_NOT_FOUND, ERROR_MESSAGES[API_CODES.ANALYSIS.ANALYSIS_NOT_FOUND], 404)
+        }
+        return { analysis: updated };
+    } catch (err) {
+        console.log("Error while saving feedback decisions:", err)
+        throw new AppError(API_CODES.ANALYSIS.ERROR_WHILE_UPDATING_FEEDBACK, ERROR_MESSAGES[API_CODES.ANALYSIS.ERROR_WHILE_UPDATING_FEEDBACK], 503)
     }
 }

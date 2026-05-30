@@ -125,3 +125,65 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  /* Hide everything, then reveal only the report section */
+  body.printing-report * {
+    visibility: hidden;
+  }
+  body.printing-report #resume-report-section,
+  body.printing-report #resume-report-section * {
+    visibility: visible;
+  }
+  body.printing-report #resume-report-section {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    background: white;
+    color: black;
+    padding: 2rem;
+  }
+  /* Ensure charts and SVGs render correctly */
+  body.printing-report #resume-report-section svg {
+    overflow: visible;
+  }
+  /* Force light colors for print */
+  body.printing-report #resume-report-section .text-muted-foreground {
+    color: #555 !important;
+  }
+
+  /* Print data tables (replace charts) */
+  body.printing-report .print-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+    margin-top: 0.5rem;
+  }
+  body.printing-report .print-data-table th {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 600;
+  }
+  body.printing-report .print-data-table td {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+  }
+  body.printing-report .print-data-table tr:nth-child(even) td {
+    background: #f9fafb;
+  }
+  body.printing-report .print-score-bar {
+    display: inline-block;
+    height: 8px;
+    background: #4f46e5;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
+}

@@ -12,6 +12,13 @@ export const authApi = createApi({
         body: { token },
       }),
     }),
+    emailLogin: builder.mutation({
+      query: ({ email, password }: { email: string; password: string }) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: { email, password },
+      }),
+    }),
     refreshToken: builder.mutation({
       query: (userId) => ({
         url: '/auth/refresh-token',
@@ -35,4 +42,4 @@ export const authApi = createApi({
   }),
 });
 
-export const { useGoogleLoginMutation, useRefreshTokenMutation, useGetMeQuery, useLogoutAPIMutation } = authApi;
+export const { useGoogleLoginMutation, useEmailLoginMutation, useRefreshTokenMutation, useGetMeQuery, useLogoutAPIMutation } = authApi;

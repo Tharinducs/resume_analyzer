@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, FileText, Zap, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { useGetResumeByIdQuery, useUploadFileMutation } from "@/features/resume/apiSlice"
+import { useGetResumeByIdQuery, useUpdateResumeExtractedDataMutation, useUploadFileMutation } from "@/features/resume/apiSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import { get, isEmpty } from "lodash"
@@ -84,18 +84,19 @@ export default function ResumeUploadPage() {
   })
 
   const [analyzeTheResume, { isLoading: analyzeLoading, isError: isAnalyzeErr }] = useAnalyzeResumeMutation()
+  const [updateResumeExtractedData, { isLoading: isSavingResume }] = useUpdateResumeExtractedDataMutation()
 
   useEffect(() => {
     if (isLoading) {
       setUploadStep("processing");
     }
-    if (isResumeDataLoading || analyzeLoading) {
+    if (isResumeDataLoading || analyzeLoading || isSavingResume) {
       dispatch(showLoader());
     }
-    if (!isResumeDataLoading && !analyzeLoading) {
+    if (!isResumeDataLoading && !analyzeLoading && !isSavingResume) {
       dispatch(hideLoader());
     }
-  }, [isLoading, isResumeDataLoading, analyzeLoading])
+  }, [isLoading, isResumeDataLoading, analyzeLoading, isSavingResume])
 
   useEffect(() => {
     if (resumeDataFromQuery) {
@@ -154,10 +155,28 @@ export default function ResumeUploadPage() {
     setUploadedFile(null)
   }
 
-  const handleSaveResume = (data: any) => {
-    // setResumeData(data)
-    console.log("Resume saved:", data)
-    // Here you would typically save to your backend
+  const handleSaveResume = async (data: any) => {
+    if (!resumeIdFromQuery) return;
+    try {
+      const result = await updateResumeExtractedData({
+        resumeId: resumeIdFromQuery,
+        extractedData: data,
+      }).unwrap();
+      setResumeData(get(result, "resume.extractedData", data));
+      toast({
+        title: "Resume saved",
+        description: "Your changes have been saved successfully.",
+        duration: 3000,
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Save failed",
+        description: "Could not save your changes. Please try again.",
+        duration: 5000,
+        variant: "destructive",
+      });
+    }
   }
 
   const handleAnalyzeResume = async () => {
@@ -295,7 +314,7 @@ export default function ResumeUploadPage() {
         {/* Editing Section */}
         {uploadStep === "editing" && (
           <div className="space-y-6">
-            <ResumeEditor initialData={resumeData} onSave={handleSaveResume} />
+            <ResumeEditor initialData={resumeData} onSave={handleSaveResume} isSaving={isSavingResume} />
 
             <Card>
               <CardContent className="p-6">

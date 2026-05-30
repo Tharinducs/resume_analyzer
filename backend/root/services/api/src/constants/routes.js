@@ -25,9 +25,16 @@ export const RESUME_ROUTES = {
   UPDATE_RESUME: `/update/:resumeId`
 };
 
+export const DASHBOARD_ROUTE = `${API}/dashboard`;
+
+export const DASHBOARD_ROUTES = {
+  GET_STATS: `/:userId`,
+};
+
 export const ANALYSIS_ROUTE = `${API}/analyze`;
 
 export const ANALYSIS_ROUTES = {
 ANALYZE: `/:resumeId`,
-GET_ANALYSIS_RESULT: `/result/:analysisId`
+GET_ANALYSIS_RESULT: `/result/:analysisId`,
+UPDATE_FEEDBACK: `/:analysisId/feedback`
 }

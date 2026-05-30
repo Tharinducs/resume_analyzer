@@ -97,11 +97,10 @@ export const deleteResumeUsingId = async (resumeId) => {
     }
 }
 
-export const updateResumeWithUpdatedExtractedData = async (resumeId, resumeData) => {
+export const updateResumeWithUpdatedExtractedData = async (resumeId, extractedData) => {
     try {
         const updatedData = await updateResume(resumeId, {
-            ...resumeData,
-            updatedAt: moment().toISOString(),
+            $set: { extractedData, updatedAt: new Date() },
         });
         return updatedData;
     } catch (err) {

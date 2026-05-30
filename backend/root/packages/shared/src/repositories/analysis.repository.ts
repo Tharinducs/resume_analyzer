@@ -16,3 +16,22 @@ export const deleteAnalysisByResumeId = async (resumeId: string) => {
 export const getAnalysesByResumeIds = async (resumeIds: string[]) => {
     return await Analysis.find({ resumeId: { $in: resumeIds } }).select('resumeId scores').lean();
 }
+
+export const getAnalysisByAnalysisId = async (analysisId: string) => {
+    return await Analysis.findById(analysisId);
+}
+
+export const getFullAnalysesByResumeIds = async (resumeIds: string[]) => {
+    return await Analysis.find({ resumeId: { $in: resumeIds } })
+        .select('resumeId scores atsBreakdown createdAt')
+        .sort({ createdAt: -1 })
+        .lean();
+}
+
+export const updateAiFeedbackByAnalysisId = async (analysisId: string, aiFeedback: any[]) => {
+    return await Analysis.findByIdAndUpdate(
+        analysisId,
+        { $set: { aiFeedback, updatedAt: new Date() } },
+        { new: true }
+    );
+}

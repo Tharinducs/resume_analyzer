@@ -8,15 +8,16 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Plus, X, Edit3, Save, User, Briefcase, GraduationCap, Award } from "lucide-react"
+import { Plus, X, Edit3, Save, User, Briefcase, GraduationCap, Award, Loader2 } from "lucide-react"
 import { ExtractedInfo } from "@/types/resume"
 import { v4 as uuidv4 } from 'uuid'
 
 
 interface ResumeEditorProps {
   initialData: ExtractedInfo
-  onSave: (data: ExtractedInfo) => void
+  onSave: (data: ExtractedInfo) => Promise<void>
   isEditable?: boolean
+  isSaving?: boolean
 }
 
 const normalizeData = (data: ExtractedInfo) => ({
@@ -38,14 +39,14 @@ const stripUIIds = (data: ExtractedInfo): ExtractedInfo => ({
   education: data.education.map(({ _uiId, ...rest }) => rest),
 })
 
-export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeEditorProps) {
+export function ResumeEditor({ initialData, onSave, isEditable = true, isSaving = false }: ResumeEditorProps) {
   const [data, setData] = useState(() => normalizeData(initialData))
   const [isEditing, setIsEditing] = useState(false)
   const [newSkill, setNewSkill] = useState("")
 
   // ─── Save ────────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    onSave(stripUIIds(data)) 
+  const handleSave = async () => {
+    await onSave(stripUIIds(data))
     setIsEditing(false)
   }
 
@@ -130,12 +131,16 @@ export function ResumeEditor({ initialData, onSave, isEditable = true }: ResumeE
           <div className="flex space-x-2">
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
                   Cancel
                 </Button>
-                <Button onClick={handleSave}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </>
             ) : (

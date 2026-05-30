@@ -6,6 +6,7 @@ import persistConfig from "./persistConfig";
 import { authApi } from "@/features/auth/apiSlice";
 import { resumeApi } from "@/features/resume/apiSlice";
 import { analysisApi } from "@/features/analysis/apiSlice";
+import { dashboardApi } from "@/features/dashboard/apiSlice";
 
 const persistedReducer = persistReducer(persistConfig,rootReducer)
 
@@ -18,7 +19,8 @@ export const store = configureStore({
     })
     .concat(authApi.middleware)
     .concat(resumeApi.middleware)
-    .concat(analysisApi.middleware),
+    .concat(analysisApi.middleware)
+    .concat(dashboardApi.middleware),
 })
 
 export const persistor = persistStore(store)

@@ -150,7 +150,9 @@ const Sidebar = ({ className, handleLogout, mobileOpen = false, onMobileClose }:
   const pathName = usePathname()
 
   useEffect(() => {
-    const pathNavItem = navigation.find((item) => item.href === pathName)
+    const pathNavItem = navigation
+      .filter((item) => pathName.startsWith(item.href))
+      .sort((a, b) => b.href.length - a.href.length)[0]
     const currentNavItemName = get(pathNavItem, "name", "Dashboard")
     if (currentNavItemName !== currentNav) {
       setCurrentNav(currentNavItemName)

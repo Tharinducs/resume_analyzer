@@ -21,7 +21,8 @@ export const API_CODES = {
     TECHNICAL_ERR: 'TECHNICAL_ERR',
   },
   RESUME:{
-    UPLOAD_SUC: 'UPLOAD_SUC'
+    UPLOAD_SUC: 'UPLOAD_SUC',
+    UPDATE_SUC: 'RESUME_UPDATE_SUC',
   }
 };
 

@@ -11,18 +11,19 @@ import { useDispatch, useSelector } from "react-redux"
 import { useDeleteResumeByIdMutation, useGetResumesListByUserQuery, useLazyDownloadResumeByIdQuery } from "@/features/resume/apiSlice"
 import { useAnalyzeResumeMutation } from "@/features/analysis/apiSlice"
 import { useToast } from "@/hooks/use-toast"
-import { get } from "lodash"
+import { get, result } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
 import { useEffect, useState } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 
-import { DropdownMenu, DropdownMenuPortal, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import useDebounce from "@/hooks/use-debounce"
 import { PAGE_SIZE } from "@/constants/apiCodes"
 import { ACTION_ITEMS, RESUME_STATUS, RESUME_STATUS_LABELS } from "@/constants/resume"
 import { useRouter } from "next/navigation"
 import { getScoreColor,isActionButtonDisabled } from "@/utils/resume.utils"
+import { checkIfResumeIsProcessed } from "./utility"
 
 export default function ResumesPage() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -104,8 +105,11 @@ export default function ResumesPage() {
       return
     }
     try {
-      const result = await analyzeResume({ resumeId: resume._id, userId }).unwrap()
-      const analysisId = get(result, "analysisId", "")
+      const analysisData = await analyzeResume({
+              userId,
+              resumeId: get(resume, "_id"),
+     }).unwrap()
+      const analysisId = get(analysisData, "analysisId", "")
       router.push(`/dashboard/resumes/analysis?resumeId=${resume._id}&analysisId=${analysisId}`)
     } catch {
       toast({
@@ -197,27 +201,23 @@ export default function ResumesPage() {
                 </div>
 
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                  <DropdownMenuTrigger className="h-8 w-8 p-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground opacity-0 group-hover:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <MoreVertical className="h-4 w-4" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.VIEW,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DOWNLOAD,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD, get(resume, 'title'))}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DELETE ,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DELETE)} className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenuPortal>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.VIEW,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.VIEW)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DOWNLOAD,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DOWNLOAD, get(resume, 'title'))}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={isActionButtonDisabled(ACTION_ITEMS.DELETE ,get(resume, 'status'))} onClick={() => onActionItem(resume._id, ACTION_ITEMS.DELETE)} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </CardHeader>
@@ -247,7 +247,7 @@ export default function ResumesPage() {
                   <Eye className="mr-2 h-3 w-3" />
                   View
                 </Button>
-                {resume.status === 'analyzed' && (
+                {checkIfResumeIsProcessed(get(resume, 'status')) && (
                   <Button
                     size="sm"
                     className="flex-1"

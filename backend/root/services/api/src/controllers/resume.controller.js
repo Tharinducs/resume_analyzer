@@ -111,13 +111,13 @@ export const deleteResume = async (req, res) => {
 }
 
 export const updateResumeData = async (req, res, next) => {
-  const resumeId = get(req, "body.resumeId")
-  const resumeData = get(req, "body.resumeData")
+  const resumeId = get(req, "params.resumeId")
+  const extractedData = get(req, "body.extractedData")
   try {
-    const updatedResumeData = await updateResumeWithUpdatedExtractedData(resumeId, resumeData)
-    res.status(200).json({ code: API_CODES.RESUME.DELETE_SUC, resume: updatedResumeData });
+    const updatedResumeData = await updateResumeWithUpdatedExtractedData(resumeId, extractedData)
+    res.status(200).json({ code: API_CODES.RESUME.UPDATE_SUC, message: "Resume updated successfully", resume: updatedResumeData });
   } catch (err) {
     console.error(err);
-    next(new AppError(API_CODES.GEN.TECHNICAL_ERR,ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR],500))
+    next(new AppError(API_CODES.GEN.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.GEN.TECHNICAL_ERR], 500))
   }
 }

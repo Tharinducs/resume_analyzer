@@ -1,6 +1,7 @@
-import { get } from "@ra/shared";
+import { get,AppError } from "@ra/shared";
 import { API_CODES } from "../constants/apiCodes.js";
-import { analyseTheResumeUsingResumeId, getAnalysisResultUsingAnalysisId  } from "../services/analysis.service.js";
+import { analyseTheResumeUsingResumeId, getAnalysisResultUsingAnalysisId, saveFeedbackDecisions } from "../services/analysis.service.js";
+import { ERROR_MESSAGES } from "../errors/errorMessages.js";
 
 export const generalAnalysis = async (req, res,next) => {
     try {
@@ -22,5 +23,17 @@ export const getAnalysisResult = async (req, res,next) => {
     } catch (err) {
         console.log("Error While Fetching Analysis Result:", err)
         next(new AppError(API_CODES.ANALYSIS.ERROR_WHILE_FETCHING_ANALYSIS, ERROR_MESSAGES[API_CODES.ANALYSIS.ERROR_WHILE_FETCHING_ANALYSIS], 503))
+    }
+}
+
+export const updateFeedback = async (req, res, next) => {
+    try {
+        const analysisId = get(req, "params.analysisId");
+        const aiFeedback = get(req, "body.aiFeedback");
+        const data = await saveFeedbackDecisions(analysisId, aiFeedback);
+        res.status(200).json({ code: API_CODES.ANALYSIS.FEEDBACK_UPDATED_SUC, message: "Feedback decisions saved successfully!", ...data });
+    } catch (err) {
+        console.log("Error While Updating Feedback:", err)
+        next(new AppError(API_CODES.ANALYSIS.ERROR_WHILE_UPDATING_FEEDBACK, ERROR_MESSAGES[API_CODES.ANALYSIS.ERROR_WHILE_UPDATING_FEEDBACK], 503))
     }
 }

@@ -4,22 +4,25 @@ import { Separator } from "@/components/ui/separator"
 import { Brain } from "lucide-react"
 import GoogleLogin from "./google-login"
 import { GoogleOAuthProvider } from "@react-oauth/google"
-import { useGoogleLoginMutation } from "@/features/auth/apiSlice";
+import { useEmailLoginMutation, useGoogleLoginMutation } from "@/features/auth/apiSlice";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/features/auth/authSlice";
 import { get } from "lodash";
 import { API_CODES } from "@/constants/apiCodes"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
 import LoginForm from "./login-form"
 
 const LoginPage = () => {
-  const [googleLogin, { isLoading: isGoogleLoading, error, isError }] = useGoogleLoginMutation();
+  const [googleLogin, { isLoading: isGoogleLoading, error: googleError, isError: isGoogleError }] = useGoogleLoginMutation();
+  const [emailLogin, { isLoading: isEmailLoading }] = useEmailLoginMutation();
   const dispatch = useDispatch();
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   useEffect(() => {
     if (isGoogleLoading) {
@@ -30,8 +33,8 @@ const LoginPage = () => {
   }, [isGoogleLoading]);
 
   useEffect(() => {
-    if (isError) {
-      const errorCode = get(error, 'data.code', API_CODES.GEN.TECHNICAL_ERR);
+    if (isGoogleError) {
+      const errorCode = get(googleError, 'data.code', API_CODES.GEN.TECHNICAL_ERR);
       let errorMessage = "An unexpected error occurred. Please try again.";
       if (errorCode === API_CODES.AUTH.GOOGLE_LOGIN_FAILED) {
         errorMessage = "Google login failed. Please try again.";
@@ -45,30 +48,52 @@ const LoginPage = () => {
         variant: "destructive",
       });
     }
-  }, [isError, error]);
+  }, [isGoogleError, googleError]);
 
-  // Handler for Google Login
+  const handleLoginSuccess = (user: object) => {
+    dispatch(loginSuccess(user));
+    toast({
+      title: "Login Successful",
+      description: "You have successfully logged in.",
+      duration: 3000,
+      variant: "success",
+    });
+    router.replace(redirectTo);
+  };
 
   const googleLoginHandler = async (credential: string) => {
-    const user = await googleLogin(credential).unwrap();
-    console.log("Google login successful: ", user);
-    if (get(user, 'code') === API_CODES.AUTH.AUTH_GOOGLE_SUCCESS) {
-      dispatch(loginSuccess(get(user, 'user', {})));
-      toast({
-        title: "Login Successful",
-        description: "You have successfully logged in with Google.",
-        duration: 3000,
-        variant: "success",
-      });
-      // Redirect to dashboard after successful login
-      router.replace("/dashboard")
+    const result = await googleLogin(credential).unwrap();
+    if (get(result, 'code') === API_CODES.AUTH.AUTH_GOOGLE_SUCCESS) {
+      handleLoginSuccess(get(result, 'user', {}));
     }
-  }
-  
-  // Handler to redirect to Signup page
+  };
+
+  const emailLoginHandler = async (email: string, password: string) => {
+    try {
+      const result = await emailLogin({ email, password }).unwrap();
+      if (get(result, 'code') === API_CODES.AUTH.AUTH_LOGIN_SUC) {
+        handleLoginSuccess(get(result, 'user', {}));
+      }
+    } catch (err) {
+      const errorCode = get(err, 'data.code', API_CODES.GEN.TECHNICAL_ERR);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (errorCode === API_CODES.AUTH.USERNAME_PASSWORD_INCORRECT) {
+        errorMessage = "Incorrect email or password.";
+      } else if (errorCode === API_CODES.AUTH.USER_NOT_FOUND) {
+        errorMessage = "No account found with this email.";
+      }
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        duration: 5000,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleRedirectToSignup = () => {
     router.push("/signup");
-  }
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -94,20 +119,20 @@ const LoginPage = () => {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* Social Login Buttons */}
             <div className="space-y-3">
               <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
                 <div className="flex justify-center w-full">
                   <div className="w-full">
-                    <GoogleLogin
-                      handleGoogleLogin={googleLoginHandler}
-                    />
+                    <GoogleLogin handleGoogleLogin={googleLoginHandler} />
                   </div>
                 </div>
               </GoogleOAuthProvider>
             </div>
-            <LoginForm handleRedirectToSignup={handleRedirectToSignup} />
-
+            <LoginForm
+              handleRedirectToSignup={handleRedirectToSignup}
+              onSubmit={emailLoginHandler}
+              isLoading={isEmailLoading}
+            />
           </CardContent>
         </Card>
 
@@ -117,7 +142,7 @@ const LoginPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default LoginPage;

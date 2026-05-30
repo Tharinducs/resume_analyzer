@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQuery from "../baseQuery";
-import { ResumeListParams, ResumeListResponse } from "@/types/resume";
+import { ExtractedInfo, ResumeListParams, ResumeListResponse } from "@/types/resume";
 
 export const resumeApi = createApi({
     reducerPath: 'resume',
@@ -57,7 +57,25 @@ export const resumeApi = createApi({
                 responseHandler: (response) => response.blob(),
             }),
         }),
+        updateResumeExtractedData: builder.mutation<
+            { resume: any },
+            { resumeId: string; extractedData: ExtractedInfo }
+        >({
+            query: ({ resumeId, extractedData }) => ({
+                url: `/resume/update/${resumeId}`,
+                method: 'PATCH',
+                body: { extractedData },
+            }),
+            invalidatesTags: ["Resumes"],
+        }),
     })
 })
 
-export const { useUploadFileMutation, useGetResumesListByUserQuery, useGetResumeByIdQuery, useDeleteResumeByIdMutation, useLazyDownloadResumeByIdQuery } = resumeApi;
+export const {
+    useUploadFileMutation,
+    useGetResumesListByUserQuery,
+    useGetResumeByIdQuery,
+    useDeleteResumeByIdMutation,
+    useLazyDownloadResumeByIdQuery,
+    useUpdateResumeExtractedDataMutation,
+} = resumeApi;

@@ -1,8 +1,8 @@
 import {
-  getResumeById,
   getResumesListByUserId,
-  getAnalysesByResumeIds,
   getFullAnalysesByResumeIds,
+  getRecentJobAnalysesByUserId,
+  getJobAnalysesByUserId,
   AppError,
   API_CODES,
   ERROR_MESSAGES,
@@ -11,28 +11,29 @@ import {
 
 export const getDashboardDataForUser = async (userId) => {
   try {
-    // Single query: all resumes for user sorted newest first
-    const allResumes = await getResumesListByUserId(userId);
-    const totalResumes = allResumes.length;
+    const [allResumes, recentJobAnalyses] = await Promise.all([
+      getResumesListByUserId(userId),
+      getRecentJobAnalysesByUserId(userId, 10),
+    ]);
 
+    const totalResumes = allResumes.length;
     const analyzedResumes = allResumes.filter(
       (r) => r.status === "analyzed" && r.analysisId
     );
     const totalResumesAnalyzed = analyzedResumes.length;
+    const totalJobsAnalyzed = recentJobAnalyses.length;
     const analyzedResumeIds = analyzedResumes.map((r) => String(r._id));
 
-    // Fetch analyses (scores + atsBreakdown) for all analyzed resumes in one query
     const analyses = analyzedResumeIds.length > 0
       ? await getFullAnalysesByResumeIds(analyzedResumeIds)
       : [];
 
-    // Build a map: resumeId → analysis
     const analysisMap = Object.fromEntries(
       analyses.map((a) => [String(a.resumeId), a])
     );
 
     // ── Stats ──────────────────────────────────────────────────────────────
-    const mostRecentAnalyzed = analyzedResumes[0]; // already sorted newest first
+    const mostRecentAnalyzed = analyzedResumes[0];
     const latestAnalysis = mostRecentAnalyzed
       ? analysisMap[String(mostRecentAnalyzed._id)]
       : null;
@@ -49,12 +50,12 @@ export const getDashboardDataForUser = async (userId) => {
         : null;
 
     // ── Recent Activity ────────────────────────────────────────────────────
-    // Last 5 resumes regardless of status, enriched with score if analyzed
-    const recentActivity = allResumes.slice(0, 5).map((r) => {
+    const resumeActivity = allResumes.slice(0, 10).map((r) => {
       const analysis = analysisMap[String(r._id)];
       return {
         _id: r._id,
         title: r.title,
+        type: "resume",
         status: r.status,
         score: analysis ? get(analysis, "scores.overall", null) : null,
         analysisId: r.analysisId || null,
@@ -62,7 +63,21 @@ export const getDashboardDataForUser = async (userId) => {
       };
     });
 
-    // ── Resume Improvement (from most recent analysis) ─────────────────────
+    const jobActivity = recentJobAnalyses.map((j) => ({
+      _id: j._id,
+      title: j.title || "Job Analysis",
+      type: "job",
+      status: "analyzed",
+      score: null,
+      analysisId: String(j._id),
+      updatedAt: j.updatedAt || j.createdAt,
+    }));
+
+    const recentActivity = [...resumeActivity, ...jobActivity]
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .slice(0, 10);
+
+    // ── Resume Improvement ─────────────────────────────────────────────────
     const resumeImprovement = latestAnalysis
       ? {
           atsScore: get(latestAnalysis, "scores.ats", 0),
@@ -78,6 +93,7 @@ export const getDashboardDataForUser = async (userId) => {
         lastResumeTitle,
         totalResumes,
         totalResumesAnalyzed,
+        totalJobsAnalyzed,
         avgJobMatchRate,
       },
       recentActivity,
@@ -85,6 +101,63 @@ export const getDashboardDataForUser = async (userId) => {
     };
   } catch (err) {
     console.error("Error fetching dashboard data:", err);
+    throw new AppError(
+      API_CODES.DASHBOARD.FETCH_FAILED,
+      ERROR_MESSAGES[API_CODES.DASHBOARD.FETCH_FAILED],
+      503
+    );
+  }
+};
+
+export const getActivityHistoryForUser = async (userId, page = 1, limit = 10) => {
+  try {
+    const [allResumes, allJobAnalyses] = await Promise.all([
+      getResumesListByUserId(userId),
+      getJobAnalysesByUserId(userId),
+    ]);
+
+    const analyzedResumes = allResumes.filter((r) => r.status === "analyzed" && r.analysisId);
+    const analyzedResumeIds = analyzedResumes.map((r) => String(r._id));
+    const analyses = analyzedResumeIds.length > 0
+      ? await getFullAnalysesByResumeIds(analyzedResumeIds)
+      : [];
+    const analysisMap = Object.fromEntries(analyses.map((a) => [String(a.resumeId), a]));
+
+    const resumeItems = allResumes.map((r) => {
+      const analysis = analysisMap[String(r._id)];
+      return {
+        _id: r._id,
+        title: r.title,
+        type: "resume",
+        status: r.status,
+        score: analysis ? get(analysis, "scores.overall", null) : null,
+        analysisId: r.analysisId || null,
+        updatedAt: r.updatedAt || r.createdAt,
+      };
+    });
+
+    const jobItems = allJobAnalyses.map((j) => ({
+      _id: j._id,
+      title: j.title || "Job Analysis",
+      type: "job",
+      status: "analyzed",
+      score: null,
+      analysisId: String(j._id),
+      updatedAt: j.updatedAt || j.createdAt,
+    }));
+
+    const all = [...resumeItems, ...jobItems].sort(
+      (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+    );
+
+    const total = all.length;
+    const totalPages = Math.ceil(total / limit);
+    const skip = (page - 1) * limit;
+    const items = all.slice(skip, skip + limit);
+
+    return { items, total, page, totalPages, limit };
+  } catch (err) {
+    console.error("Error fetching activity history:", err);
     throw new AppError(
       API_CODES.DASHBOARD.FETCH_FAILED,
       ERROR_MESSAGES[API_CODES.DASHBOARD.FETCH_FAILED],

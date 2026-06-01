@@ -8,11 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Clock, FileText, TrendingUp } from "lucide-react"
+import { Briefcase, Clock, FileText, TrendingUp } from "lucide-react"
 import DashboardWelcome from "./dashbord-welcome"
 import { RecentActivityItem, ResumeImprovement } from "@/types/dashboard"
 import { useEffect } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
+import moment from "moment"
 
 function getActivityBadgeVariant(status: RecentActivityItem["status"]): "default" | "secondary" | "destructive" {
   if (status === "analyzed" || status === "processed") return "default"
@@ -21,16 +22,10 @@ function getActivityBadgeVariant(status: RecentActivityItem["status"]): "default
 }
 
 function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return moment(dateStr).fromNow()
 }
 
-function ResumeImprovementSection({ improvement }: Readonly<{ improvement: ResumeImprovement }>) {
+const ResumeImprovementSection = ({ improvement }: Readonly<{ improvement: ResumeImprovement }>) => {
   if (!improvement) {
     return (
       <p className="text-sm text-muted-foreground">No analysis data yet. Analyze a resume to see improvement metrics.</p>
@@ -72,7 +67,7 @@ export default function DashboardPage() {
 
   const dispatch = useDispatch();
 
-  const recentActivity = data?.recentActivity ?? []
+  const recentActivity = (data?.recentActivity ?? []).slice(0, 5)
 
   useEffect(() => {
     if (isLoading) {
@@ -109,16 +104,24 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No recent activity yet.</p>
             )}
             {recentActivity.map((activity) => (
-              <div key={activity._id} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+              <div key={String(activity._id)} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
                 <div className="flex-shrink-0 mt-1">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  {activity.type === "job"
+                    ? <Briefcase className="h-4 w-4 text-orange-500" />
+                    : <FileText className="h-4 w-4 text-muted-foreground" />
+                  }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-medium truncate">{activity.title}</p>
-                    <Badge variant={getActivityBadgeVariant(activity.status)} className="text-xs">
-                      {activity.status}
-                    </Badge>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Badge variant="outline" className={`text-xs ${activity.type === "job" ? "border-orange-400 text-orange-500" : ""}`}>
+                        {activity.type === "job" ? "Job" : "Resume"}
+                      </Badge>
+                      <Badge variant={getActivityBadgeVariant(activity.status)} className="text-xs">
+                        {activity.status}
+                      </Badge>
+                    </div>
                   </div>
                   {activity.score !== null && (
                     <p className="text-xs text-muted-foreground mt-1">Score: {activity.score}%</p>
@@ -127,8 +130,8 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
-            <Button variant="outline" className="w-full mt-4 bg-transparent">
-              View All Activity
+            <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
+              <a href="/dashboard/history">View All Activity</a>
             </Button>
           </CardContent>
         </Card>

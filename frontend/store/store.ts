@@ -7,6 +7,7 @@ import { authApi } from "@/features/auth/apiSlice";
 import { resumeApi } from "@/features/resume/apiSlice";
 import { analysisApi } from "@/features/analysis/apiSlice";
 import { dashboardApi } from "@/features/dashboard/apiSlice";
+import { jobAnalyzerApi } from "@/features/jobAnalyzer/apiSlice";
 
 const persistedReducer = persistReducer(persistConfig,rootReducer)
 
@@ -20,7 +21,8 @@ export const store = configureStore({
     .concat(authApi.middleware)
     .concat(resumeApi.middleware)
     .concat(analysisApi.middleware)
-    .concat(dashboardApi.middleware),
+    .concat(dashboardApi.middleware)
+    .concat(jobAnalyzerApi.middleware),
 })
 
 export const persistor = persistStore(store)

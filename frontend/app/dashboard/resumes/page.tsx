@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast"
 import { get, result } from "lodash"
 import moment from "moment"
 import { ResumeTypeForList } from "@/types/Resume"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { hideLoader, showLoader } from "@/features/common/loaderSlice"
+import { sendPushNotification } from "@/utils/pushNotifications"
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import useDebounce from "@/hooks/use-debounce"
@@ -26,12 +27,25 @@ import { getScoreColor,isActionButtonDisabled } from "@/utils/resume.utils"
 import { checkIfResumeIsProcessed } from "./utility"
 
 export default function ResumesPage() {
-  const { user } = useSelector((state: RootState) => state.auth);
-  const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useSelector((state: RootState) => state.auth) as { user: Record<string, any> | null };
+  const [searchTerm, setSearchTerm] = useState(() => {
+    if (typeof window === "undefined") return ""
+    return new URLSearchParams(window.location.search).get("search") ?? ""
+  });
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const userId = get(user, "_id", "");
+  const pushResumeAnalysis = get(user, "notifications.resumeAnalysis", true);
   const router = useRouter();
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // Focus the search input if a search param was pre-filled from global search
+  useEffect(() => {
+    if (searchTerm) {
+      setTimeout(() => searchInputRef.current?.focus(), 50)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const debouncedSearchItem = useDebounce(searchTerm, 500);
 
@@ -110,6 +124,9 @@ export default function ResumesPage() {
               resumeId: get(resume, "_id"),
      }).unwrap()
       const analysisId = get(analysisData, "analysisId", "")
+      if (pushResumeAnalysis) {
+        sendPushNotification("Resume Analysis Complete", `"${resume.title}" has been analysed. Tap to view your results.`)
+      }
       router.push(`/dashboard/resumes/analysis?resumeId=${resume._id}&analysisId=${analysisId}`)
     } catch {
       toast({
@@ -164,7 +181,7 @@ export default function ResumesPage() {
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} disabled={isEmpty} placeholder="Search resumes..." className="pl-10" />
+          <Input ref={searchInputRef} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} disabled={isEmpty} placeholder="Search resumes..." className="pl-10" />
         </div>
         <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value)} className="w-auto">
           <TabsList>

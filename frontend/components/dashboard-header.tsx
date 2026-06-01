@@ -1,9 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { GlobalSearch } from "@/components/global-search"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +12,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, User, Settings, LogOut, Menu } from "lucide-react"
+import { Bell, User, Settings, LogOut, Menu } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useSelector } from "react-redux"
 import { get } from "lodash";
 import { RootState } from "@/store/store"
 
 export function DashboardHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
-  const user = useSelector((state: RootState) => state.auth.user);
-  console.log("DashboardHeader user:", user);
+  const user = useSelector((state: RootState) => state.auth.user) as Record<string, any> | null
+
+  const displayName: string = get(user, "name", "") || get(user, "email", "User")
+  const email: string = get(user, "email", "")
+  const picture: string = get(user, "picture", "")
+  const initials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((w: string) => w[0]?.toUpperCase() ?? "")
+    .join("")
+
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4 md:px-6 gap-4">
@@ -36,13 +45,7 @@ export function DashboardHeader({ onMenuToggle }: { onMenuToggle?: () => void })
 
         {/* Search – hidden on mobile */}
         <div className="hidden md:flex items-center flex-1 min-w-0 max-w-md">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search resumes, jobs, or analysis..."
-              className="pl-10 bg-muted/50 border-0 focus-visible:ring-1"
-            />
-          </div>
+          <GlobalSearch />
         </div>
 
         {/* Right Section */}
@@ -52,39 +55,50 @@ export function DashboardHeader({ onMenuToggle }: { onMenuToggle?: () => void })
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="h-9 w-9 p-0 relative">
             <Bell className="h-4 w-4" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">3</Badge>
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="/professional-headshot.png" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  {picture && <AvatarImage src={picture} alt={displayName} referrerPolicy="no-referrer" />}
+                  <AvatarFallback className="text-sm font-medium">{initials || <User className="h-4 w-4" />}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
-                  <p className="text-xs leading-none text-muted-foreground">john.doe@example.com</p>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    {picture && <AvatarImage src={picture} alt={displayName} referrerPolicy="no-referrer" />}
+                    <AvatarFallback className="text-xs">{initials || <User className="h-3 w-3" />}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-sm font-medium leading-none truncate">{displayName}</p>
+                    <p className="text-xs leading-none text-muted-foreground mt-1 truncate">{email}</p>
+                  </div>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+              <DropdownMenuItem asChild>
+                <a href="/dashboard/settings">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </a>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+              <DropdownMenuItem asChild>
+                <a href="/dashboard/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+              <DropdownMenuItem asChild>
+                <a href="/login">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

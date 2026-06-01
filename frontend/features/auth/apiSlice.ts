@@ -39,7 +39,22 @@ export const authApi = createApi({
         method: 'GET',
       }),
     }),
+    updateMe: builder.mutation({
+      query: (body) => ({
+        url: '/auth/me',
+        method: 'PATCH',
+        body,
+      }),
+    }),
+    uploadPicture: builder.mutation<{ code: string; user: Record<string, unknown> }, FormData>({
+      query: (formData) => ({
+        url: '/auth/me/picture',
+        method: 'POST',
+        body: formData,
+        formData: true,
+      }),
+    }),
   }),
 });
 
-export const { useGoogleLoginMutation, useEmailLoginMutation, useRefreshTokenMutation, useGetMeQuery, useLogoutAPIMutation } = authApi;
+export const { useGoogleLoginMutation, useEmailLoginMutation, useRefreshTokenMutation, useGetMeQuery, useLogoutAPIMutation, useUpdateMeMutation, useUploadPictureMutation } = authApi;

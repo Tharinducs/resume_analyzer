@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { TrendingUp, FileText, Target, Award } from "lucide-react"
+import { Award, Briefcase, FileText, Target } from "lucide-react"
 import { DashboardStats as DashboardStatsType } from "@/types/dashboard"
 
 interface DashboardStatsProps {
@@ -13,6 +12,7 @@ export function DashboardStats({ stats, isLoading }: Readonly<DashboardStatsProp
   const lastResumeScore = stats?.lastResumeScore ?? null;
   const totalResumesAnalyzed = stats?.totalResumesAnalyzed ?? 0;
   const avgJobMatchRate = stats?.avgJobMatchRate ?? null;
+  const totalJobsAnalyzed = stats?.totalJobsAnalyzed ?? 0;
 
   const items = [
     {
@@ -32,6 +32,14 @@ export function DashboardStats({ stats, isLoading }: Readonly<DashboardStatsProp
       progress: null,
     },
     {
+      title: "Jobs Analyzed",
+      value: isLoading ? "—" : String(totalJobsAnalyzed),
+      description: "Job descriptions extracted",
+      icon: Briefcase,
+      color: "text-orange-500",
+      progress: null,
+    },
+    {
       title: "Avg Job Match Rate",
       value: avgJobMatchRate !== null ? `${avgJobMatchRate}%` : "—",
       description: "Across all analyses",
@@ -42,7 +50,7 @@ export function DashboardStats({ stats, isLoading }: Readonly<DashboardStatsProp
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 sm:grid-cols-1">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 sm:grid-cols-1">
       {items.map((stat) => {
         const Icon = stat.icon
         return (

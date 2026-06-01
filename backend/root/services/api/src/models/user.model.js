@@ -3,14 +3,23 @@ import bcrypt from "bcrypt";
 
 const userSchema = new db.Schema(
     {
-        name: { type: String,required: true},
-        email: { type: String, unique: true ,required: true},
+        name: { type: String, required: true },
+        email: { type: String, unique: true, required: true },
         picture: String,
         providerUserId: String,
         provider: { type: String, default: "local" },
         mobileNo: { type: String },
         address: String,
-        password:{ type: String , select: false}
+        bio: { type: String, default: "" },
+        jobTitle: { type: String, default: "" },
+        location: { type: String, default: "" },
+        notifications: {
+            resumeAnalysis: { type: Boolean, default: true },
+            jobMatch: { type: Boolean, default: true },
+            weeklyDigest: { type: Boolean, default: false },
+            marketingEmails: { type: Boolean, default: false },
+        },
+        password: { type: String, select: false },
     },
     { timestamps: true }
 )

@@ -35,3 +35,11 @@ export const getResumeById = async (resumeId: string) => {
 export const deleteResumeById = async (resumeId: string) => {
   return await Resume.findByIdAndDelete(resumeId);
 };
+
+export const updateResumeJobAnalysis = async (resumeId: string, jobAnalysisId: string) => {
+  return await Resume.findByIdAndUpdate(
+    resumeId,
+    { $set: { jobAnalysisId, updatedAt: new Date() } },
+    { new: true }
+  );
+};

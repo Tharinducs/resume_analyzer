@@ -1,7 +1,32 @@
 import { get, isEmpty, AppError } from "@ra/shared";
-import { handleLogin, handleProviderLogin, handleRefreshToken, handleRegister,getUser } from "../services/auth.service.js";
+import { handleLogin, handleProviderLogin, handleRefreshToken, handleRegister, getUser, updateUser } from "../services/auth.service.js";
 import { verifyProviderLogin } from "../utils/utility.js";
-import { ENVIRONMENTS } from "../constants/common.js";
+import { ENVIRONMENTS, AVATAR_UPLOAD_PATH } from "../constants/common.js";
+import multer from "multer";
+import * as crypto from "node:crypto";
+import path from "node:path";
+import fs from "node:fs";
+
+fs.mkdirSync(AVATAR_UPLOAD_PATH, { recursive: true });
+
+const avatarStorage = multer.diskStorage({
+  destination: AVATAR_UPLOAD_PATH,
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${crypto.randomUUID()}${ext}`);
+  },
+});
+
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.mimetype)) {
+      return cb(new Error("Only JPEG, PNG, WebP and GIF images are allowed."));
+    }
+    cb(null, true);
+  },
+});
 
 import { API_CODES } from "../constants/apiCodes.js";
 import { ERROR_MESSAGES } from "../errors/errorMessages.js";
@@ -131,3 +156,49 @@ export const getMe = (req, res) => {
     }
     res.status(200).json({ code: "AUTH_ME_SUC", user });
 }
+
+export const updateMe = async (req, res, next) => {
+    const userId = get(req, "user.id", null);
+    if (!userId) {
+        return res.status(401).json({ code: API_CODES.AUTH.USER_NOT_FOUND, message: "Not authenticated" });
+    }
+    const allowed = ["name", "mobileNo", "address", "bio", "jobTitle", "location", "notifications"];
+    const updateData = {};
+    allowed.forEach((key) => {
+        if (req.body[key] !== undefined) updateData[key] = req.body[key];
+    });
+    try {
+        const user = await updateUser(userId, updateData);
+        res.status(200).json({ code: "AUTH_UPDATE_SUC", message: "Profile updated successfully", user });
+    } catch (err) {
+        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR], 500));
+    }
+};
+
+export const handleAvatarUpload = (req, res, next) => {
+    avatarUpload.single("avatar")(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ code: "AVATAR_UPLOAD_FAILED", message: err.message });
+        }
+        next();
+    });
+};
+
+export const updatePicture = async (req, res, next) => {
+    const userId = get(req, "user.id", null);
+    if (!userId) {
+        return res.status(401).json({ code: API_CODES.AUTH.USER_NOT_FOUND, message: "Not authenticated" });
+    }
+    if (!req.file) {
+        return res.status(400).json({ code: "AVATAR_UPLOAD_FAILED", message: "No image file provided." });
+    }
+    const protocol = req.protocol;
+    const host = req.get("host");
+    const pictureUrl = `${protocol}://${host}/uploads/avatars/${req.file.filename}`;
+    try {
+        const user = await updateUser(userId, { picture: pictureUrl });
+        res.status(200).json({ code: "AUTH_UPDATE_SUC", message: "Profile picture updated.", user });
+    } catch (err) {
+        next(new AppError(API_CODES.AUTH.TECHNICAL_ERR, ERROR_MESSAGES[API_CODES.AUTH.TECHNICAL_ERR], 500));
+    }
+};

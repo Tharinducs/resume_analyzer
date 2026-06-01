@@ -11,6 +11,7 @@ export const COOKIE_SETTINGS = {
 }
 
 export const RESUME_UPLOAD_PATH = "uploads/resumes/";
+export const AVATAR_UPLOAD_PATH = "uploads/avatars/";
 
 export const ALLOWED_RESUME_FILE_TYPES = [".pdf", ".doc", ".docx"];
 

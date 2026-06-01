@@ -6,12 +6,14 @@ import { authApi } from "@/features/auth/apiSlice";
 import { resumeApi } from "@/features/resume/apiSlice";
 import { analysisApi } from "@/features/analysis/apiSlice";
 import { dashboardApi } from "@/features/dashboard/apiSlice";
+import { jobAnalyzerApi } from "@/features/jobAnalyzer/apiSlice";
 
 const rootReducer = combineReducers({
   [authApi.reducerPath] : authApi.reducer,
   [resumeApi.reducerPath] : resumeApi.reducer,
   [analysisApi.reducerPath] : analysisApi.reducer,
   [dashboardApi.reducerPath] : dashboardApi.reducer,
+  [jobAnalyzerApi.reducerPath] : jobAnalyzerApi.reducer,
   auth : authReducer,
   loader: loaderReducer,
   common: commonReducer

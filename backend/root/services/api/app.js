@@ -2,7 +2,10 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from 'helmet';
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 import "@ra/config";
 import { globalRateLimiter } from "./src/midlewares/rateLimit.middleware.js";
 import { errorHandler } from "./src/midlewares/errorHandler.js";
@@ -14,6 +17,10 @@ import dashboardRouter from "./src/routes/dashboard.routes.js";
 import jobAnalyzerRouter from "./src/routes/job-analyzer.routes.js";
 import searchRouter from "./src/routes/search.routes.js";
 import { authenticate } from "./src/midlewares/authenticate.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const swaggerDoc = YAML.load(join(__dirname, "swagger.yaml"));
 
 const app = express();
 
@@ -37,6 +44,8 @@ app.disable("x-powered-by");
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "OK" });
 });
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 app.use(`${AUTH_ROUTE}`, authRouter); 
 app.use(`${RESUME_ROUTE}`, authenticate ,resumeRouter);

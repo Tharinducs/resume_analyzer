@@ -1,0 +1,1474 @@
+openapi: 3.0.3
+info:
+  title: Resume Analyzer API
+  description: |
+    AI-powered resume analysis and job matching API.
+
+    **Authentication:** Most endpoints require a JWT bearer token obtained from
+    the `/auth/provider` (Google OAuth) or `/auth/login` endpoints.
+    Pass it as `Authorization: Bearer <token>` or it is automatically read from
+    the `token` httpOnly cookie set on login.
+  version: 1.0.0
+  contact:
+    name: Resume Analyzer
+
+servers:
+  - url: http://localhost:3001/api
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Authentication and user profile
+  - name: Resumes
+    description: Resume upload, listing, and management
+  - name: Analysis
+    description: AI resume analysis and feedback
+  - name: Job Analyzer
+    description: Job description parsing and resume–job matching
+  - name: Dashboard
+    description: Dashboard stats and activity history
+  - name: Search
+    description: Global cross-collection search
+
+# ─── Security ────────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─── Reusable Schemas ──────────────────────────────────────────────────────
+  schemas:
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: TECHNICAL_ERR
+        message:
+          type: string
+          example: An unexpected error occurred.
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 665f1a2b3c4d5e6f7a8b9c0d
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        picture:
+          type: string
+          format: uri
+          example: https://lh3.googleusercontent.com/photo.jpg
+        bio:
+          type: string
+          example: Full-stack engineer with 5 years experience.
+        jobTitle:
+          type: string
+          example: Software Engineer
+        location:
+          type: string
+          example: San Francisco, CA
+        notifications:
+          $ref: '#/components/schemas/NotificationPreferences'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    NotificationPreferences:
+      type: object
+      properties:
+        resumeAnalysis:
+          type: boolean
+          default: true
+          description: Browser push notification when a resume analysis completes.
+        jobMatch:
+          type: boolean
+          default: true
+          description: Browser push notification when a job match completes.
+        weeklyDigest:
+          type: boolean
+          default: false
+        marketingEmails:
+          type: boolean
+          default: false
+
+    Resume:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 665f1a2b3c4d5e6f7a8b9c0e
+        userId:
+          type: string
+        title:
+          type: string
+          example: Senior Engineer Resume
+        originalName:
+          type: string
+          example: jane_doe_resume.pdf
+        fileUrl:
+          type: string
+        fileType:
+          type: string
+          enum: [PDF, DOC, DOCX]
+        size:
+          type: string
+          example: 245 KB
+        status:
+          type: string
+          enum: [processing, processed, analyzed, failed]
+        score:
+          type: number
+          nullable: true
+          example: 78
+        analysisId:
+          type: string
+          nullable: true
+        extractedData:
+          type: object
+          description: Structured resume data extracted and structured by the AI.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ResumeSummary:
+      description: Lightweight resume object returned in list views.
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [processing, processed, analyzed, failed]
+        score:
+          type: number
+          nullable: true
+        analysisId:
+          type: string
+          nullable: true
+        fileType:
+          type: string
+        size:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 5
+        total:
+          type: integer
+          example: 47
+        hasPrev:
+          type: boolean
+        hasNext:
+          type: boolean
+
+    Analysis:
+      type: object
+      properties:
+        _id:
+          type: string
+        resumeId:
+          type: string
+        userId:
+          type: string
+        atsScore:
+          type: number
+          example: 82
+        jobMatchScore:
+          type: number
+          example: 74
+        overallScore:
+          type: number
+          example: 78
+        aiFeedback:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedbackItem'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    FeedbackItem:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+          example: Skills
+        suggestion:
+          type: string
+          example: Add quantifiable achievements to your experience section.
+        accepted:
+          type: boolean
+          nullable: true
+          description: |
+            null = not yet reviewed, true = accepted by user, false = dismissed.
+
+    JobAnalysis:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        title:
+          type: string
+          example: Senior Backend Engineer at Acme Corp
+        jobDescription:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    MatchResult:
+      type: object
+      properties:
+        matchScore:
+          type: number
+          example: 68
+        matchedSkills:
+          type: array
+          items:
+            type: string
+          example: [Node.js, MongoDB, REST APIs]
+        missingSkills:
+          type: array
+          items:
+            type: string
+          example: [Kubernetes, GraphQL]
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    PendingComparison:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        jobAnalysisId:
+          type: string
+        jobTitle:
+          type: string
+          example: Senior Backend Engineer
+        resumeId:
+          type: string
+        resumeTitle:
+          type: string
+          example: My Engineering Resume
+        createdAt:
+          type: string
+          format: date-time
+
+    ActivityItem:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [resume, job]
+        status:
+          type: string
+          enum: [processing, processed, analyzed, failed]
+        score:
+          type: number
+          nullable: true
+        analysisId:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+
+    DashboardStats:
+      type: object
+      properties:
+        lastResumeScore:
+          type: number
+          nullable: true
+        lastResumeTitle:
+          type: string
+          nullable: true
+        totalResumes:
+          type: integer
+        totalResumesAnalyzed:
+          type: integer
+        totalJobsAnalyzed:
+          type: integer
+        avgJobMatchRate:
+          type: number
+          nullable: true
+
+    SearchResults:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SEARCH_SUC
+        resumes:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              title:
+                type: string
+              status:
+                type: string
+              updatedAt:
+                type: string
+                format: date-time
+        analyses:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                description: analysisId
+              resumeId:
+                type: string
+              title:
+                type: string
+              updatedAt:
+                type: string
+                format: date-time
+        jobs:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              title:
+                type: string
+              updatedAt:
+                type: string
+                format: date-time
+        pending:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingComparison'
+
+  # ─── Reusable Responses ────────────────────────────────────────────────────
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Authentication required.
+
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+# ─── Global security (override per-endpoint for public routes) ───────────────
+security:
+  - bearerAuth: []
+
+# ─── Paths ───────────────────────────────────────────────────────────────────
+paths:
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # AUTH
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /auth/provider:
+    post:
+      tags: [Auth]
+      summary: Sign in with Google OAuth
+      description: |
+        Verifies a Google ID token obtained from the frontend Google Sign-In flow.
+        Creates the user on first login. Returns a JWT access token (also set as
+        an httpOnly `token` cookie) and a refresh token cookie.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: Google ID token from the frontend OAuth flow.
+            example:
+              token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Login successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_GOOGLE_SUC
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid Google token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Email / password login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            example:
+              email: jane@example.com
+              password: supersecret
+      responses:
+        '200':
+          description: Login successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_LOGIN_SUC
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Incorrect email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Registration successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_REGISTER_SUC
+                  user:
+                    $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (clears auth cookies)
+      security: []
+      responses:
+        '200':
+          description: Logged out successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_LOGOUT_SUC
+                  message:
+                    type: string
+                    example: Logged out successfully
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Refresh the JWT access token
+      description: |
+        Reads the `refreshToken` from the httpOnly cookie. Issues a new access
+        token and refresh token (both set as cookies).
+      security: []
+      responses:
+        '200':
+          description: Token refreshed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_REFRESH_TOKEN_SUC
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Missing or expired refresh token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      responses:
+        '200':
+          description: User returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_ME_SUC
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Auth]
+      summary: Update current user's profile
+      description: |
+        Allowed fields: `name`, `mobileNo`, `address`, `bio`, `jobTitle`,
+        `location`, `notifications`. Any omitted field is left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Jane Doe
+                bio:
+                  type: string
+                  example: Full-stack engineer.
+                jobTitle:
+                  type: string
+                  example: Software Engineer
+                location:
+                  type: string
+                  example: San Francisco, CA
+                mobileNo:
+                  type: string
+                address:
+                  type: string
+                notifications:
+                  $ref: '#/components/schemas/NotificationPreferences'
+      responses:
+        '200':
+          description: Profile updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_UPDATE_SUC
+                  message:
+                    type: string
+                    example: Profile updated successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/me/picture:
+    post:
+      tags: [Auth]
+      summary: Upload profile avatar
+      description: |
+        Accepts a single image file (JPEG, PNG, WebP, or GIF, max 2 MB).
+        Saves to `uploads/avatars/` and updates the user's `picture` field with
+        the absolute URL.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Image file (JPEG / PNG / WebP / GIF, max 2 MB).
+      responses:
+        '200':
+          description: Avatar updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: AUTH_UPDATE_SUC
+                  message:
+                    type: string
+                    example: Profile picture updated.
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: No file provided or unsupported format / size exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # RESUMES
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /resume/upload:
+    post:
+      tags: [Resumes]
+      summary: Upload a new resume
+      description: |
+        Accepts a PDF, DOC, or DOCX file. Creates a resume record with status
+        `processing` and enqueues a BullMQ job to extract and structure the text.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [resume, userId, title]
+              properties:
+                resume:
+                  type: string
+                  format: binary
+                  description: Resume file (PDF / DOC / DOCX).
+                userId:
+                  type: string
+                  description: ID of the owning user.
+                title:
+                  type: string
+                  description: Human-readable label for the resume.
+      responses:
+        '200':
+          description: Resume uploaded and queued for processing.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: RESUME_UPLOAD_SUC
+                  message:
+                    type: string
+                    example: Resume uploaded successfully
+                  resume:
+                    $ref: '#/components/schemas/Resume'
+        '400':
+          description: No file provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /resume/list/{userId}:
+    get:
+      tags: [Resumes]
+      summary: List resumes for a user
+      description: Returns a paginated, optionally filtered and searched list of resumes.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The user's MongoDB ObjectId.
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, processing, processed, analyzed, failed]
+            default: all
+          description: Filter by resume status. Use `all` to return every status.
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Case-insensitive substring match on resume title.
+      responses:
+        '200':
+          description: Resumes returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: RESUME_FETCH_SUC
+                  message:
+                    type: string
+                  resumes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResumeSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /resume/download/{resumeId}:
+    get:
+      tags: [Resumes]
+      summary: Download the original resume file
+      parameters:
+        - name: resumeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File stream returned with correct Content-Type and Content-Disposition headers.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Resume or file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /resume/{resumeId}:
+    get:
+      tags: [Resumes]
+      summary: Get a single resume by ID
+      parameters:
+        - name: resumeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resume returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: RESUME_FETCH_SUC
+                  resume:
+                    $ref: '#/components/schemas/Resume'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /resume/delete/{resumeId}:
+    delete:
+      tags: [Resumes]
+      summary: Delete a resume
+      parameters:
+        - name: resumeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resume deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: RESUME_DELETE_SUC
+                  message:
+                    type: string
+                    example: Resume deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /resume/update/{resumeId}:
+    patch:
+      tags: [Resumes]
+      summary: Update resume extracted data
+      description: Saves user-edited structured data back to the resume record.
+      parameters:
+        - name: resumeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [extractedData]
+              properties:
+                extractedData:
+                  type: object
+                  description: Full structured resume data object.
+      responses:
+        '200':
+          description: Resume updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: RESUME_UPDATE_SUC
+                  message:
+                    type: string
+                    example: Resume updated successfully
+                  resume:
+                    $ref: '#/components/schemas/Resume'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # ANALYSIS
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /analyze/{resumeId}:
+    post:
+      tags: [Analysis]
+      summary: Run AI analysis on a resume
+      description: |
+        Calls the configured AI provider (Gemini or Groq) to evaluate the resume
+        against ATS criteria. Sets resume status to `analyzed` and stores the
+        `analysisId` on the resume record. Resume must have status `processed`.
+      parameters:
+        - name: resumeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Analysis complete.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ANALYSIS_SUC
+                  message:
+                    type: string
+                    example: Your Analysis has been successfully completed!
+                  analysisId:
+                    type: string
+                  atsScore:
+                    type: number
+                  jobMatchScore:
+                    type: number
+                  overallScore:
+                    type: number
+                  aiFeedback:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeedbackItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: AI provider error or analysis failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analyze/result/{analysisId}:
+    get:
+      tags: [Analysis]
+      summary: Retrieve a stored analysis result
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis result returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ANALYSIS_SUC
+                  analysis:
+                    $ref: '#/components/schemas/Analysis'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServerError'
+
+  /analyze/{analysisId}/feedback:
+    patch:
+      tags: [Analysis]
+      summary: Save user feedback decisions on AI suggestions
+      description: |
+        Persists the user's accept/dismiss decisions for each AI feedback item.
+        `accepted: true` = accepted, `accepted: false` = dismissed, `accepted: null` = not yet reviewed.
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [aiFeedback]
+              properties:
+                aiFeedback:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FeedbackItem'
+      responses:
+        '200':
+          description: Feedback saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: FEEDBACK_UPDATED_SUC
+                  message:
+                    type: string
+                    example: Feedback decisions saved successfully!
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServerError'
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # JOB ANALYZER
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /job-analyze/extract-keywords:
+    post:
+      tags: [Job Analyzer]
+      summary: Extract keywords from a job description
+      description: |
+        Accepts either free-form text (`text` field in JSON body) or a PDF file
+        upload (`file` field in multipart). Parses the job description using the
+        AI provider and returns structured keywords and a `jobAnalysisId` to use
+        in the match step.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: Raw job description text.
+            example:
+              text: "We are looking for a Senior Node.js Engineer with 5+ years..."
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file containing the job description.
+      responses:
+        '200':
+          description: Keywords extracted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: JOB_EXTRACT_SUC
+                  message:
+                    type: string
+                    example: Keywords extracted successfully.
+                  jobAnalysisId:
+                    type: string
+                    description: ID of the created JobAnalysis record.
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  title:
+                    type: string
+                    description: AI-inferred job title.
+        '400':
+          description: No text or file provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: AI provider error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /job-analyze/match-resume:
+    post:
+      tags: [Job Analyzer]
+      summary: Match a resume against a job analysis
+      description: |
+        Compares the structured resume data against the extracted job keywords.
+        Returns a match score, matched skills, missing skills, and recommendations.
+        If a pending comparison exists for this resume–job pair it is automatically removed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jobAnalysisId, resumeId]
+              properties:
+                jobAnalysisId:
+                  type: string
+                resumeId:
+                  type: string
+            example:
+              jobAnalysisId: 665f1a2b3c4d5e6f7a8b9c10
+              resumeId: 665f1a2b3c4d5e6f7a8b9c0e
+      responses:
+        '200':
+          description: Match complete.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: JOB_MATCH_SUC
+                  message:
+                    type: string
+                    example: Resume matched successfully.
+                  matchResult:
+                    $ref: '#/components/schemas/MatchResult'
+        '400':
+          description: Missing required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: AI provider error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /job-analyze/pending-comparisons:
+    get:
+      tags: [Job Analyzer]
+      summary: List pending resume–job comparisons
+      description: Returns all saved pending comparisons for the authenticated user.
+      responses:
+        '200':
+          description: Pending comparisons returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: PENDING_LIST_SUC
+                  pending:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PendingComparison'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Job Analyzer]
+      summary: Save a pending comparison
+      description: Bookmarks a resume–job pair to be matched later.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jobAnalysisId, jobTitle, resumeId, resumeTitle]
+              properties:
+                jobAnalysisId:
+                  type: string
+                jobTitle:
+                  type: string
+                  example: Senior Backend Engineer
+                resumeId:
+                  type: string
+                resumeTitle:
+                  type: string
+                  example: My Engineering Resume
+      responses:
+        '201':
+          description: Pending comparison saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: PENDING_ADD_SUC
+                  pending:
+                    $ref: '#/components/schemas/PendingComparison'
+        '400':
+          description: Missing required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /job-analyze/pending-comparisons/{id}:
+    delete:
+      tags: [Job Analyzer]
+      summary: Remove a pending comparison
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectId of the PendingComparison document.
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: PENDING_REMOVE_SUC
+                  message:
+                    type: string
+                    example: Removed.
+        '404':
+          description: Pending comparison not found or does not belong to user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # DASHBOARD
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /dashboard/{userId}:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard statistics and recent activity
+      description: |
+        Returns summary stats, the 5 most recent activity items (resumes + job analyses),
+        and a resume improvement comparison if the user has multiple analyzed resumes.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard data returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: DASHBOARD_FETCH_SUC
+                  message:
+                    type: string
+                  stats:
+                    $ref: '#/components/schemas/DashboardStats'
+                  recentActivity:
+                    type: array
+                    maxItems: 5
+                    items:
+                      $ref: '#/components/schemas/ActivityItem'
+                  resumeImprovement:
+                    type: object
+                    nullable: true
+                    properties:
+                      atsScore:
+                        type: number
+                      jobMatchScore:
+                        type: number
+                      overallScore:
+                        type: number
+                      resumeTitle:
+                        type: string
+                        nullable: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServerError'
+
+  /dashboard/{userId}/activity:
+    get:
+      tags: [Dashboard]
+      summary: Get paginated activity history
+      description: |
+        Returns a merged, chronologically sorted list of resume and job analysis
+        activity items across all pages. Results are paginated server-side.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Activity history returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: DASHBOARD_FETCH_SUC
+                  message:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActivityItem'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  limit:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServerError'
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # SEARCH
+  # ══════════════════════════════════════════════════════════════════════════
+
+  /search:
+    get:
+      tags: [Search]
+      summary: Global search across resumes, analyses, jobs, and pending comparisons
+      description: |
+        Searches the authenticated user's data across four collections using a
+        case-insensitive regex. Returns up to 6 resumes, 6 job analyses, and
+        4 pending comparisons. Resumes that have an `analysisId` are also
+        returned in the `analyses` group.
+
+        Minimum query length enforced by the frontend: **2 characters**.
+        The backend accepts any non-empty string.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query string. Special regex characters are escaped automatically.
+          example: software engineer
+      responses:
+        '200':
+          description: Search results returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
